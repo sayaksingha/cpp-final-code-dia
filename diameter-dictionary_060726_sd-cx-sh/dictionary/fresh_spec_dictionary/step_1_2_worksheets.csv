@@ -1,0 +1,112 @@
+Command,Code,Flags,AVP,Bracket,Multiple
+TDFSessionRequest,8388637,"REQ, PXY",Session-Id,< >,no
+TDFSessionRequest,8388637,"REQ, PXY",DRMP,[ ],no
+TDFSessionRequest,8388637,"REQ, PXY",Vendor-Specific-Application-Id,{ },no
+TDFSessionRequest,8388637,"REQ, PXY",Origin-Host,{ },no
+TDFSessionRequest,8388637,"REQ, PXY",Origin-Realm,{ },no
+TDFSessionRequest,8388637,"REQ, PXY",Destination-Realm,{ },no
+TDFSessionRequest,8388637,"REQ, PXY",Destination-Host,[ ],no
+TDFSessionRequest,8388637,"REQ, PXY",Origin-State-Id,[ ],no
+TDFSessionRequest,8388637,"REQ, PXY",OC-Supported-Features,[ ],no
+TDFSessionRequest,8388637,"REQ, PXY",Subscription-Id,*[ ],yes
+TDFSessionRequest,8388637,"REQ, PXY",Supported-Features,[ ],no
+TDFSessionAnswer,8388637,PXY,Session-Id,< >,no
+TDFSessionAnswer,8388637,PXY,DRMP,[ ],no
+TDFSessionAnswer,8388637,PXY,Vendor-Specific-Application-Id,{ },no
+TDFSessionAnswer,8388637,PXY,Origin-Host,{ },no
+TDFSessionAnswer,8388637,PXY,Origin-Realm,{ },no
+TDFSessionAnswer,8388637,PXY,Result-Code,[ ],no
+TDFSessionAnswer,8388637,PXY,Experimental-Result,[ ],no
+TDFSessionAnswer,8388637,PXY,Origin-State-Id,[ ],no
+TDFSessionAnswer,8388637,PXY,OC-Supported-Features,[ ],no
+TDFSessionAnswer,8388637,PXY,OC-OLR,[ ],no
+TDFSessionAnswer,8388637,PXY,Supported-Features,*[ ],yes
+TDFSessionAnswer,8388637,PXY,ADC-Rule-Report,[ ],no
+TDFSessionAnswer,8388637,PXY,Event-Report-Indication,[ ],no
+TDFSessionAnswer,8388637,PXY,Error-Message,[ ],no
+TDFSessionAnswer,8388637,PXY,Error-Reporting-Host,[ ],no
+TDFSessionAnswer,8388637,PXY,Failed-AVP,[ ],no
+TDFSessionAnswer,8388637,PXY,Proxy-Info,*[ ],yes
+TDFSessionAnswer,8388637,PXY,Route-Record,*[ ],yes
+TDFSessionAnswer,8388637,PXY,Load,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Session-Id,< >,no
+CreditControlRequestSd,272,"REQ, PXY",DRMP,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Auth-Application-Id,{ },no
+CreditControlRequestSd,272,"REQ, PXY",Origin-Host,{ },no
+CreditControlRequestSd,272,"REQ, PXY",Origin-Realm,{ },no
+CreditControlRequestSd,272,"REQ, PXY",Destination-Realm,{ },no
+CreditControlRequestSd,272,"REQ, PXY",OC-Supported-Features,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",CC-Request-Type,{ },no
+CreditControlRequestSd,272,"REQ, PXY",CC-Request-Number,{ },no
+CreditControlRequestSd,272,"REQ, PXY",Credit-Management-Status,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Destination-Host,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Origin-State-Id,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Framed-IP-Address,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Framed-Ipv6-Prefix,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",ADC-Rule-Report,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Application-Detection-Information,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Event-Trigger,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Event-Report-Indication,[ ],no
+CreditControlRequestSd,272,"REQ, PXY",Usage-Monitoring-Information,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Proxy-Info,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Route-Record,*[ ],yes
+CreditControlRequestSd,272,"REQ, PXY",Supported-Features,[ ],no
+CreditControlAnswerSd,272,PXY,Session-Id,< >,no
+CreditControlAnswerSd,272,PXY,DRMP,[ ],no
+CreditControlAnswerSd,272,PXY,Auth-Application-Id,{ },no
+CreditControlAnswerSd,272,PXY,Origin-Host,{ },no
+CreditControlAnswerSd,272,PXY,Origin-Realm,{ },no
+CreditControlAnswerSd,272,PXY,Result-Code,[ ],no
+CreditControlAnswerSd,272,PXY,Experimental-Result,[ ],no
+CreditControlAnswerSd,272,PXY,CC-Request-Type,{ },no
+CreditControlAnswerSd,272,PXY,CC-Request-Number,{ },no
+CreditControlAnswerSd,272,PXY,OC-Supported-Features,[ ],no
+CreditControlAnswerSd,272,PXY,OC-OLR,[ ],no
+CreditControlAnswerSd,272,PXY,Framed-Ipv6-Prefix,[ ],no
+CreditControlAnswerSd,272,PXY,QoS-Information,[ ],no
+CreditControlAnswerSd,272,PXY,Event-Trigger,*[ ],yes
+CreditControlAnswerSd,272,PXY,CSG-Information-Reporting,*[ ],yes
+CreditControlAnswerSd,272,PXY,Event-Report-Indication,[ ],no
+CreditControlAnswerSd,272,PXY,Origin-State-Id,[ ],no
+CreditControlAnswerSd,272,PXY,Redirect-Host,*[ ],yes
+CreditControlAnswerSd,272,PXY,Redirect-Host-Usage,[ ],no
+CreditControlAnswerSd,272,PXY,Redirect-Max-Cache-Time,[ ],no
+CreditControlAnswerSd,272,PXY,ADC-Rule-Remove,*[ ],yes
+CreditControlAnswerSd,272,PXY,ADC-Rule-Install,*[ ],yes
+CreditControlAnswerSd,272,PXY,Revalidation-Time,[ ],no
+CreditControlAnswerSd,272,PXY,Usage-Monitoring-Information,*[ ],yes
+CreditControlAnswerSd,272,PXY,Error-Message,[ ],no
+CreditControlAnswerSd,272,PXY,Error-Reporting-Host,[ ],no
+CreditControlAnswerSd,272,PXY,Failed-AVP,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",Session-Id,< >,no
+ReAuthRequestSd,258,"REQ, PXY",DRMP,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",Auth-Application-Id,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Origin-Host,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Origin-Realm,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Destination-Realm,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Destination-Host,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Re-Auth-Request-Type,{ },no
+ReAuthRequestSd,258,"REQ, PXY",Session-Release-Cause,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",Origin-State-Id,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",OC-Supported-Features,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",QoS-Information,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",Event-Trigger,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",CSG-Information-Reporting,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",Event-Report-Indication,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",ADC-Rule-Remove,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",ADC-Rule-Install,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",Revalidation-Time,[ ],no
+ReAuthRequestSd,258,"REQ, PXY",Usage-Monitoring-Information,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",Proxy-Info,*[ ],yes
+ReAuthRequestSd,258,"REQ, PXY",Route-Record,*[ ],yes
+ReAuthAnswerSd,258,PXY,Session-Id,< >,no
+ReAuthAnswerSd,258,PXY,DRMP,[ ],no
+ReAuthAnswerSd,258,PXY,Origin-Host,{ },no
+ReAuthAnswerSd,258,PXY,Origin-Realm,{ },no
+ReAuthAnswerSd,258,PXY,Result-Code,[ ],no
+ReAuthAnswerSd,258,PXY,Experimental-Result,[ ],no
+ReAuthAnswerSd,258,PXY,Origin-State-Id,[ ],no
+ReAuthAnswerSd,258,PXY,OC-Supported-Features,[ ],no
+ReAuthAnswerSd,258,PXY,OC-OLR,[ ],no
+ReAuthAnswerSd,258,PXY,ADC-Rule-Report,[ ],no
+ReAuthAnswerSd,258,PXY,Event-Report-Indication,[ ],no

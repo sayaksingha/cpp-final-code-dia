@@ -1,0 +1,1713 @@
+#include "DiameterPeg.h"
+#include <iostream>
+using namespace std;
+
+DiameterPeg::DiameterPeg()
+{
+
+	for(int i = 0; i < E_NUM_OF_BASE_ACTION ; ++i)
+		pthread_spin_init(&m_base_spinlock[i], 0);
+
+	for(int i = 0; i < E_NUM_OF_DCCA_ACTION ; ++i)
+		pthread_spin_init(&m_dcca_spinlock[i], 0);
+
+	pthread_mutex_init(&m_clear_mutex, 0);
+	pthread_mutex_init(&m_cummulation_mutex, 0);
+}
+
+DiameterPeg::~DiameterPeg()
+{
+//	if(m_instance)
+//		delete m_instance;
+
+	for(int i = 0; i < E_NUM_OF_BASE_ACTION ; ++i)
+		pthread_spin_destroy(&m_base_spinlock[i]);
+
+	for(int i = 0; i < E_NUM_OF_DCCA_ACTION ; ++i)
+		pthread_spin_destroy(&m_dcca_spinlock[i]);
+
+	pthread_mutex_destroy(&m_clear_mutex);
+	pthread_mutex_destroy(&m_cummulation_mutex);
+}
+/*
+DiameterPeg* DiameterPeg::createInstance()
+{
+	if(m_instance == NULL)
+		m_instance = new DiameterPeg;
+
+	return m_instance;
+}
+*/
+
+void DiameterPeg::ClearPeg()
+{
+      pthread_mutex_lock(&m_clear_mutex);	
+      m_cer = 0;
+      m_cea_success = 0;
+      m_cea_fail = 0;
+
+      m_dwr = 0;
+      m_dwa_success = 0;
+      m_dwa_fail = 0;
+
+      m_dpr = 0;
+      m_dpa_success = 0;
+      m_dpa_fail = 0;
+
+      m_rcv = 0;
+      m_send = 0;
+
+      m_ccr_initial = 0;
+      m_ccr_initial_drop = 0;
+      m_ccr_initial_timeout = 0;
+      m_cca_initial_success = 0;
+      m_cca_initial_fail = 0;
+
+      m_ccr_update = 0;
+      m_ccr_update_drop = 0;
+      m_ccr_update_timeout = 0;
+      m_cca_update_success = 0;
+      m_cca_update_fail = 0;
+
+      m_ccr_terminate = 0;
+      m_ccr_terminate_drop = 0;
+      m_ccr_terminate_timeout = 0;
+      m_cca_terminate_success = 0;
+      m_cca_terminate_fail = 0;
+
+      m_rar = 0;
+      m_rar_drop = 0;
+      m_rar_timeout = 0;
+      m_raa_success = 0;
+      m_raa_fail = 0;
+
+      m_asr = 0;
+      m_asr_drop = 0;
+      m_asr_timeout = 0;
+      m_asa_success = 0;
+      m_asa_fail = 0;
+
+      m_aar = 0;
+      m_aar_drop = 0;
+      m_aar_timeout = 0;
+      m_aaa_success = 0;
+      m_aaa_fail = 0;
+      
+      m_str = 0;
+      m_str_drop = 0;
+      m_str_timeout = 0;
+      m_sta_success = 0;
+      m_sta_fail = 0;
+
+      m_slr=0;
+      m_slr_drop=0;
+      m_slr_timeout=0;
+      m_sla_success=0;
+      m_sla_fail=0;
+ 
+      m_slr_interm=0;
+      m_slr_interm_drop=0;
+      m_slr_interm_timeout=0;
+      m_sla_interm_success=0;
+      m_sla_interm_fail=0;
+
+      m_snr=0;
+      m_snr_drop=0;
+      m_snr_timeout=0;
+      m_sna_success=0;
+      m_sna_fail=0;
+ 
+      m_ulr=0;
+      m_ulr_drop=0;
+      m_ulr_timeout=0;
+      m_ula_success=0;
+      m_ula_fail=0;
+
+      m_air=0;
+      m_air_drop=0;
+      m_air_timeout=0;
+      m_aia_success=0;
+      m_aia_fail=0;
+
+      m_pur=0;
+      m_pur_drop=0;
+      m_pur_timeout=0;
+      m_pua_success=0;
+      m_pua_fail=0;
+
+      m_clr=0;
+      m_clr_drop=0;
+      m_clr_timeout=0;
+      m_cla_success=0;
+      m_cla_fail=0;
+
+      m_idr=0;
+      m_idr_drop=0;
+      m_idr_timeout=0;
+      m_ida_success=0;
+      m_ida_fail=0;
+
+      m_dsr=0;
+      m_dsr_drop=0;
+      m_dsr_timeout=0;
+      m_dsa_success=0;
+      m_dsa_fail=0;
+
+      m_rsr=0;
+      m_rsr_drop=0;
+      m_rsr_timeout=0;
+      m_rsa_success=0;
+      m_rsa_fail=0;
+
+      m_nor=0;
+      m_nor_drop=0;
+      m_nor_timeout=0;
+      m_noa_success=0;
+      m_noa_fail=0;
+
+
+      m_str_sy=0;
+      m_str_drop_sy=0;
+      m_str_timeout_sy=0;
+      m_sta_success_sy=0;
+      m_sta_fail_sy=0;
+
+      // SLh peg reset
+      m_rir         = 0;
+      m_rir_drop    = 0;
+      m_rir_timeout = 0;
+      m_ria_success = 0;
+      m_ria_fail    = 0;
+
+      // Sd peg reset
+      m_sd_tsr          = 0;
+      m_sd_tsr_drop     = 0;
+      m_sd_tsr_timeout  = 0;
+      m_sd_tsa_success  = 0;
+      m_sd_tsa_fail     = 0;
+
+      m_sd_ccr          = 0;
+      m_sd_ccr_drop     = 0;
+      m_sd_ccr_timeout  = 0;
+      m_sd_cca_success  = 0;
+      m_sd_cca_fail     = 0;
+
+      m_sd_rar          = 0;
+      m_sd_rar_drop     = 0;
+      m_sd_rar_timeout  = 0;
+      m_sd_raa_success  = 0;
+      m_sd_raa_fail     = 0;
+
+      // Sh peg reset
+      m_sh_udr          = 0;
+      m_sh_udr_drop     = 0;
+      m_sh_udr_timeout  = 0;
+      m_sh_uda_success  = 0;
+      m_sh_uda_fail     = 0;
+
+      m_sh_pur          = 0;
+      m_sh_pur_drop     = 0;
+      m_sh_pur_timeout  = 0;
+      m_sh_pua_success  = 0;
+      m_sh_pua_fail     = 0;
+
+      m_sh_snr          = 0;
+      m_sh_snr_drop     = 0;
+      m_sh_snr_timeout  = 0;
+      m_sh_sna_success  = 0;
+      m_sh_sna_fail     = 0;
+
+      m_sh_pnr          = 0;
+      m_sh_pnr_drop     = 0;
+      m_sh_pnr_timeout  = 0;
+      m_sh_pna_success  = 0;
+      m_sh_pna_fail     = 0;
+
+
+      // Cx peg reset
+      m_cx_uar          = 0;
+      m_cx_uar_drop     = 0;
+      m_cx_uar_timeout  = 0;
+      m_cx_uaa_success  = 0;
+      m_cx_uaa_fail     = 0;
+
+      m_cx_sar          = 0;
+      m_cx_sar_drop     = 0;
+      m_cx_sar_timeout  = 0;
+      m_cx_saa_success  = 0;
+      m_cx_saa_fail     = 0;
+
+      m_cx_lir          = 0;
+      m_cx_lir_drop     = 0;
+      m_cx_lir_timeout  = 0;
+      m_cx_lia_success  = 0;
+      m_cx_lia_fail     = 0;
+
+      m_cx_mar          = 0;
+      m_cx_mar_drop     = 0;
+      m_cx_mar_timeout  = 0;
+      m_cx_maa_success  = 0;
+      m_cx_maa_fail     = 0;
+
+      m_cx_rtr          = 0;
+      m_cx_rtr_drop     = 0;
+      m_cx_rtr_timeout  = 0;
+      m_cx_rta_success  = 0;
+      m_cx_rta_fail     = 0;
+
+      m_cx_ppr          = 0;
+      m_cx_ppr_drop     = 0;
+      m_cx_ppr_timeout  = 0;
+      m_cx_ppa_success  = 0;
+      m_cx_ppa_fail     = 0;
+      
+
+      m_unexpected = 0;
+      m_sytem_error = 0;
+	
+      m_error_bit = 0;  
+      m_retx_bit = 0;
+ 
+      pthread_mutex_unlock(&m_clear_mutex);	
+}
+
+void DiameterPeg::GeneratePeg(E_BaseAction action)
+{
+	switch (action)
+	{
+		case E_CER_MSG :
+			{
+				//pthread_mutex_lock(&m_base_mutex[E_CER_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_CER_MSG]);
+				m_cer++;
+				pthread_spin_unlock(&m_base_spinlock[E_CER_MSG]);
+				//pthread_mutex_unlock(&m_base_mutex[E_CER_MSG]);
+			}
+			break;
+		case E_CEA_SUCCESS_MSG :
+			{
+				//pthread_mutex_lock(&m_base_mutex[E_CEA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_CEA_SUCCESS_MSG]);
+            m_cea_success++;
+				pthread_spin_unlock(&m_base_spinlock[E_CEA_SUCCESS_MSG]);
+				//pthread_mutex_unlock(&m_base_mutex[E_CEA_SUCCESS_MSG]);
+			}
+			break;
+		case E_CEA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_CEA_FAIL_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_CEA_FAIL_MSG]);
+				m_cea_fail++;
+				pthread_spin_unlock(&m_base_spinlock[E_CEA_FAIL_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_CEA_FAIL_MSG]);
+			}
+			break;
+
+		case E_DWR_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DWR_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DWR_MSG]);
+				m_dwr++;
+				pthread_spin_unlock(&m_base_spinlock[E_DWR_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DWR_MSG]);
+			}
+			break;
+		case E_DWA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DWA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DWA_SUCCESS_MSG]);
+				m_dwa_success++;
+				pthread_spin_unlock(&m_base_spinlock[E_DWA_SUCCESS_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DWA_SUCCESS_MSG]);
+			}
+			break;
+		case E_DWA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DWA_FAIL_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DWA_FAIL_MSG]);
+				m_dwa_fail++;
+				pthread_spin_unlock(&m_base_spinlock[E_DWA_FAIL_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DWA_FAIL_MSG]);
+			}
+			break;
+
+		case E_DPR_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DPR_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DPR_MSG]);
+				m_dpr++;
+				pthread_spin_unlock(&m_base_spinlock[E_DPR_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DPR_MSG]);
+			}
+			break;
+		case E_DPA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DPA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DPA_SUCCESS_MSG]);
+				m_dpa_success++;
+				pthread_spin_unlock(&m_base_spinlock[E_DPA_SUCCESS_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DPA_SUCCESS_MSG]);
+			}
+			break;
+		case E_DPA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_DPA_FAIL_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_DPA_SUCCESS_MSG]);
+				m_dpa_fail++;
+				pthread_spin_unlock(&m_base_spinlock[E_DPA_SUCCESS_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_DPA_FAIL_MSG]);
+			}
+			break;
+
+		case E_RCV_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_RCV_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_RCV_MSG]);
+				m_rcv++;
+				pthread_spin_unlock(&m_base_spinlock[E_RCV_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_RCV_MSG]);
+			}
+			break;
+		case E_SEND_MSG :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_SEND_MSG]);
+				pthread_spin_lock(&m_base_spinlock[E_SEND_MSG]);
+				m_send++;
+				pthread_spin_unlock(&m_base_spinlock[E_SEND_MSG]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_SEND_MSG]);
+			}
+			break;
+		case E_SYS_ERR :
+			{
+				//pthread_mutex_locklock(&m_base_mutex[E_SYS_ERR]);
+				pthread_spin_lock(&m_base_spinlock[E_SYS_ERR]);
+				m_sytem_error++;
+				pthread_spin_unlock(&m_base_spinlock[E_SYS_ERR]);
+				//pthread_mutex_lockunlock(&m_base_mutex[E_SYS_ERR]);
+			}
+			break;
+		case E_ERROR_BIT:
+			{
+				pthread_spin_lock(&m_base_spinlock[E_ERROR_BIT]);
+				m_error_bit++;
+				pthread_spin_unlock(&m_base_spinlock[E_ERROR_BIT]);
+			}
+			break;
+		case E_RETX_BIT:
+			{
+				pthread_spin_lock(&m_base_spinlock[E_RETX_BIT]);
+				m_retx_bit++;
+				pthread_spin_unlock(&m_base_spinlock[E_RETX_BIT]);
+			}
+			break;
+		default :
+			break;
+	} /* end switch */
+
+	return;
+}
+
+void DiameterPeg::GeneratePeg(E_DccaAction action)
+{
+	switch (action)
+	{
+		case E_CCR_INITIAL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_INITIAL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_INITIAL_MSG]);
+				m_ccr_initial++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_INITIAL_MSG]);
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_INITIAL_MSG]);
+			}
+			break;
+		case E_CCR_INITIAL_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_INITIAL_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_INITIAL_DROP_MSG]);
+				m_ccr_initial_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_INITIAL_DROP_MSG]);
+
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_INITIAL_DROP_MSG]);
+			}
+			break;
+		case E_CCR_INITIAL_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_INITIAL_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_INITIAL_TIMEOUT_MSG]);
+				m_ccr_initial_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_INITIAL_TIMEOUT_MSG]);
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_INITIAL_TIMEOUT_MSG]);
+			}
+			break;
+		case E_CCA_INITIAL_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_INITIAL_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_INITIAL_SUCCESS_MSG]);
+				m_cca_initial_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_INITIAL_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_INITIAL_SUCCESS_MSG]);
+			}
+			break;
+		case E_CCA_INITIAL_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_INITIAL_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_INITIAL_FAIL_MSG]);
+				m_cca_initial_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_INITIAL_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_INITIAL_FAIL_MSG]);
+			}
+			break;
+		case E_CCR_UPDATE_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_UPDATE_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_UPDATE_MSG]);
+				m_ccr_update++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_UPDATE_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_UPDATE_MSG]);
+			}
+			break;
+		case E_CCR_UPDATE_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_UPDATE_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_UPDATE_DROP_MSG]);
+				m_ccr_update_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_UPDATE_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_UPDATE_DROP_MSG]);
+			}
+			break;
+		case E_CCR_UPDATE_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_UPDATE_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_UPDATE_TIMEOUT_MSG]);
+				m_ccr_update_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_UPDATE_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_UPDATE_TIMEOUT_MSG]);
+			}
+			break;
+		case E_CCA_UPDATE_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_UPDATE_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_UPDATE_SUCCESS_MSG]);
+            m_cca_update_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_UPDATE_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_UPDATE_SUCCESS_MSG]);
+			}
+			break;
+		case E_CCA_UPDATE_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_UPDATE_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_UPDATE_FAIL_MSG]);
+				m_cca_update_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_UPDATE_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_UPDATE_FAIL_MSG]);
+			}
+			break;
+		case E_CCR_TERMINATE_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_TERMINATE_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_TERMINATE_MSG]);
+				m_ccr_terminate++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_TERMINATE_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_TERMINATE_MSG]);
+			}
+			break;
+		case E_CCR_TERMINATE_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_TERMINATE_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_TERMINATE_DROP_MSG]);
+				m_ccr_terminate_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_TERMINATE_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_TERMINATE_DROP_MSG]);
+			}
+			break;
+		case E_CCR_TERMINATE_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCR_TERMINATE_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCR_TERMINATE_TIMEOUT_MSG]);
+				m_ccr_terminate_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCR_TERMINATE_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCR_TERMINATE_TIMEOUT_MSG]);
+			}
+			break;
+		case E_CCA_TERMINATE_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_TERMINATE_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_TERMINATE_SUCCESS_MSG]);
+				m_cca_terminate_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_TERMINATE_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_TERMINATE_SUCCESS_MSG]);
+			}
+			break;
+		case E_CCA_TERMINATE_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_CCA_TERMINATE_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_CCA_TERMINATE_FAIL_MSG]);
+				m_cca_terminate_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_CCA_TERMINATE_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_CCA_TERMINATE_FAIL_MSG]);
+			}
+			break;
+		case E_RAR_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_RAR_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_RAR_MSG]);
+				m_rar++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_RAR_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_RAR_MSG]);
+			}
+			break;
+		case E_RAR_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_RAR_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_RAR_DROP_MSG]);
+				m_rar_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_RAR_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_RAR_DROP_MSG]);
+			}
+			break;
+		case E_RAR_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_RAR_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_RAR_TIMEOUT_MSG]);
+				m_rar_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_RAR_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_RAR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_RAA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_RAA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_RAA_SUCCESS_MSG]);
+            m_raa_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_RAA_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_RAA_SUCCESS_MSG]);
+			}
+			break;
+		case E_RAA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_RAA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_RAA_FAIL_MSG]);
+				m_raa_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_RAA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_RAA_FAIL_MSG]);
+			}
+			break;
+		case E_ASR_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_ASR_MSG]);
+				m_asr++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_ASR_MSG]);
+			}
+			break;
+		case E_ASR_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_ASR_DROP_MSG]);
+				m_asr_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_ASR_DROP_MSG]);
+			}
+			break;
+		case E_ASR_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_ASR_TIMEOUT_MSG]);
+				m_asr_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_ASR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_ASA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_ASA_SUCCESS_MSG]);
+            m_asa_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASA_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_ASA_SUCCESS_MSG]);
+			}
+			break;
+		case E_ASA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_ASA_FAIL_MSG]);
+				m_asa_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_ASA_FAIL_MSG]);
+			}
+			break;
+		case E_AAR_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_AAR_MSG]);
+				m_aar++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_AAR_MSG]);
+			}
+			break;
+		case E_AAR_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_AAR_DROP_MSG]);
+				m_aar_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_AAR_DROP_MSG]);
+			}
+			break;
+		case E_AAR_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASR_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_AAR_TIMEOUT_MSG]);
+				m_aar_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASR_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_AAR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_AAA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_AAA_SUCCESS_MSG]);
+				m_aaa_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASA_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_AAA_SUCCESS_MSG]);
+			}
+			break;
+		case E_AAA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_ASA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_AAA_FAIL_MSG]);
+				m_aaa_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_ASA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_AAA_FAIL_MSG]);
+			}
+			break;
+
+		case E_STR_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STR_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_STR_MSG]);
+				m_str++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STR_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_STR_MSG]);
+			}
+			break;
+		case E_STR_DROP_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STR_DROP_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_STR_DROP_MSG]);
+				m_str_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STR_DROP_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_STR_DROP_MSG]);
+			}
+			break;
+		case E_STR_TIMEOUT_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STR_TIMEOUT_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_STR_TIMEOUT_MSG]);
+				m_str_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STR_TIMEOUT_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_STR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_STA_SUCCESS_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STA_SUCCESS_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_STA_SUCCESS_MSG]);
+            m_sta_success++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STA_SUCCESS_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_STA_SUCCESS_MSG]);
+			}
+			break;
+		case E_STA_FAIL_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_STA_SUCCESS_MSG]);
+				m_sta_fail++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_STA_SUCCESS_MSG]);
+			}
+			break;
+
+      case E_SY_SLR_MSG:
+         {
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_MSG]);
+				m_slr++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_MSG]); 
+			}
+			break;
+		case E_SY_SLR_DROP_MSG:
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_DROP_MSG]);
+				m_slr_drop++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_DROP_MSG]); 
+			}
+			break;
+		case E_SY_SLR_TIMEOUT_MSG:
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_TIMEOUT_MSG]);
+				m_slr_timeout++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_STA_FAIL_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_SY_SLA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_SY_SLA_SUCCESS_MSG]);
+            m_sla_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLA_SUCCESS_MSG]);
+			}
+			break;
+		case E_SY_SLA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_SY_SLA_FAIL_MSG]);
+				m_sla_fail++;
+            pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLA_FAIL_MSG]);
+			}
+			break;
+		case E_SY_SLR_INTER_MSG:
+			{
+            pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_INTER_MSG]);
+            m_slr_interm++;
+            pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_INTER_MSG]);
+			}
+			break;
+		case E_SY_SLR_INTER_DROP_MSG:
+			{
+            pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_INTER_DROP_MSG]);
+            m_slr_interm_drop++;
+            pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_INTER_DROP_MSG]);
+			}
+			break;
+		case E_SY_SLR_INTER_TIMEOUT_MSG:
+			{
+            pthread_spin_lock(&m_dcca_spinlock[E_SY_SLR_INTER_TIMEOUT_MSG]);
+            m_slr_interm_timeout++;
+            pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLR_INTER_TIMEOUT_MSG]); 
+			}
+			break;
+		case E_SY_SLA_INTER_SUCCESS_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SLA_INTER_SUCCESS_MSG]);
+           m_sla_interm_success++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLA_INTER_SUCCESS_MSG]); 
+			}
+			break;
+		case E_SY_SLA_INTER_FAIL_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SLA_INTER_FAIL_MSG]);
+           m_sla_interm_fail++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SLA_INTER_FAIL_MSG]); 
+			}
+			break; 
+		case E_SY_SNR_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SNR_MSG]);
+           m_snr++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SNR_MSG]); 
+			}
+			break;
+		case E_SY_SNR_DROP_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SNR_DROP_MSG]);
+           m_snr_drop++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SNR_DROP_MSG]);
+			}
+			break; 
+		case E_SY_SNR_TIMEOUT_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SNR_TIMEOUT_MSG]);
+           m_snr_timeout++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SNR_TIMEOUT_MSG]); 
+			}
+			break;
+		case E_SY_SNA_SUCCESS_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SNA_SUCCESS_MSG]);
+           m_sna_success++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SNA_SUCCESS_MSG]);      
+			}
+			break;
+		case E_SY_SNA_FAIL_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_SNA_FAIL_MSG]);
+           m_sna_fail++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_SNA_FAIL_MSG]); 
+			}
+			break;
+		case E_SY_STR_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_STR_MSG]);
+           m_str_sy++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_STR_MSG]);
+			}
+			break;
+		case E_SY_STR_DROP_MSG:
+			{
+            pthread_spin_lock(&m_dcca_spinlock[E_SY_STR_DROP_MSG]);
+            m_str_drop_sy++;
+            pthread_spin_unlock(&m_dcca_spinlock[E_SY_STR_DROP_MSG]); 
+			}
+			break;
+		case E_SY_STR_TIMEOUT_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_STR_TIMEOUT_MSG]);
+           m_str_drop_sy++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_STR_DROP_MSG]); 
+			}
+			break;
+		case E_SY_STA_SUCCESS_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_STA_SUCCESS_MSG]);
+           m_sta_success_sy++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_STA_SUCCESS_MSG]);
+			}
+			break;
+		case E_SY_STA_FAIL_MSG:
+			{
+           pthread_spin_lock(&m_dcca_spinlock[E_SY_STA_FAIL_MSG]);
+           m_sta_fail_sy++;
+           pthread_spin_unlock(&m_dcca_spinlock[E_SY_STA_FAIL_MSG]);
+			}
+			break; 
+
+
+           // S6a Messages - ULR
+    case E_ULR_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_ULR_MSG]);
+          m_ulr++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_ULR_MSG]);
+       }
+       break;
+    case E_ULR_DROP_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_ULR_DROP_MSG]);
+          m_ulr_drop++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_ULR_DROP_MSG]);
+       }
+       break;
+    case E_ULR_TIMEOUT_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_ULR_TIMEOUT_MSG]);
+          m_ulr_timeout++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_ULR_TIMEOUT_MSG]);
+       }
+       break;
+    case E_ULA_SUCCESS_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_ULA_SUCCESS_MSG]);
+          m_ula_success++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_ULA_SUCCESS_MSG]);
+       }
+       break;
+    case E_ULA_FAIL_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_ULA_FAIL_MSG]);
+          m_ula_fail++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_ULA_FAIL_MSG]);
+       }
+       break;
+
+    // S6a Messages - AIR
+    case E_S6A_AIR_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_S6A_AIR_MSG]);
+          m_air++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_S6A_AIR_MSG]);
+       }
+       break;
+    case E_S6A_AIR_DROP_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_S6A_AIR_DROP_MSG]);
+          m_air_drop++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_S6A_AIR_DROP_MSG]);
+       }
+       break;
+    case E_S6A_AIR_TIMEOUT_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_S6A_AIR_TIMEOUT_MSG]);
+          m_air_timeout++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_S6A_AIR_TIMEOUT_MSG]);
+       }
+       break;
+    case E_S6A_AIA_SUCCESS_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_S6A_AIA_SUCCESS_MSG]);
+          m_aia_success++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_S6A_AIA_SUCCESS_MSG]);
+       }
+       break;
+    case E_S6A_AIA_FAIL_MSG:
+       {
+          pthread_spin_lock(&m_dcca_spinlock[E_S6A_AIA_FAIL_MSG]);
+          m_aia_fail++;
+          pthread_spin_unlock(&m_dcca_spinlock[E_S6A_AIA_FAIL_MSG]);
+       }
+       break;
+
+		// S6a Messages - PUR
+		case E_S6A_PUR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_PUR_MSG]);
+				m_pur++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_PUR_MSG]);
+			}
+			break;
+		case E_S6A_PUR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_PUR_DROP_MSG]);
+				m_pur_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_PUR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_PUR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_PUR_TIMEOUT_MSG]);
+				m_pur_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_PUR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_PUA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_PUA_SUCCESS_MSG]);
+				m_pua_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_PUA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_PUA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_PUA_FAIL_MSG]);
+				m_pua_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_PUA_FAIL_MSG]);
+			}
+			break;
+
+		// S6a Messages - CLR
+		case E_S6A_CLR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_CLR_MSG]);
+				m_clr++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_CLR_MSG]);
+			}
+			break;
+		case E_S6A_CLR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_CLR_DROP_MSG]);
+				m_clr_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_CLR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_CLR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_CLR_TIMEOUT_MSG]);
+				m_clr_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_CLR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_CLA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_CLA_SUCCESS_MSG]);
+				m_cla_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_CLA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_CLA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_CLA_FAIL_MSG]);
+				m_cla_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_CLA_FAIL_MSG]);
+			}
+			break;
+
+		// S6a Messages - IDR
+		case E_S6A_IDR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_IDR_MSG]);
+				m_idr++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_IDR_MSG]);
+			}
+			break;
+		case E_S6A_IDR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_IDR_DROP_MSG]);
+				m_idr_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_IDR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_IDR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_IDR_TIMEOUT_MSG]);
+				m_idr_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_IDR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_IDA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_IDA_SUCCESS_MSG]);
+				m_ida_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_IDA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_IDA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_IDA_FAIL_MSG]);
+				m_ida_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_IDA_FAIL_MSG]);
+			}
+			break;
+
+		// S6a Messages - DSR
+		case E_S6A_DSR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_DSR_MSG]);
+				m_dsr++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_DSR_MSG]);
+			}
+			break;
+		case E_S6A_DSR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_DSR_DROP_MSG]);
+				m_dsr_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_DSR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_DSR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_DSR_TIMEOUT_MSG]);
+				m_dsr_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_DSR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_DSA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_DSA_SUCCESS_MSG]);
+				m_dsa_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_DSA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_DSA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_DSA_FAIL_MSG]);
+				m_dsa_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_DSA_FAIL_MSG]);
+			}
+			break;
+
+		// S6a Messages - RSR
+		case E_S6A_RSR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_RSR_MSG]);
+				m_rsr++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_RSR_MSG]);
+			}
+			break;
+		case E_S6A_RSR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_RSR_DROP_MSG]);
+				m_rsr_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_RSR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_RSR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_RSR_TIMEOUT_MSG]);
+				m_rsr_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_RSR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_RSA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_RSA_SUCCESS_MSG]);
+				m_rsa_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_RSA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_RSA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_RSA_FAIL_MSG]);
+				m_rsa_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_RSA_FAIL_MSG]);
+			}
+			break;
+
+		// S6a Messages - NOR
+		case E_S6A_NOR_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_NOR_MSG]);
+				m_nor++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_NOR_MSG]);
+			}
+			break;
+		case E_S6A_NOR_DROP_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_NOR_DROP_MSG]);
+				m_nor_drop++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_NOR_DROP_MSG]);
+			}
+			break;
+		case E_S6A_NOR_TIMEOUT_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_NOR_TIMEOUT_MSG]);
+				m_nor_timeout++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_NOR_TIMEOUT_MSG]);
+			}
+			break;
+		case E_S6A_NOA_SUCCESS_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_NOA_SUCCESS_MSG]);
+				m_noa_success++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_NOA_SUCCESS_MSG]);
+			}
+			break;
+		case E_S6A_NOA_FAIL_MSG:
+			{
+				pthread_spin_lock(&m_dcca_spinlock[E_S6A_NOA_FAIL_MSG]);
+				m_noa_fail++;
+				pthread_spin_unlock(&m_dcca_spinlock[E_S6A_NOA_FAIL_MSG]);
+			}
+			break;
+
+         	// SLh Messages
+		case E_SLH_RIR_MSG:
+		    {
+			pthread_spin_lock(&m_dcca_spinlock[E_SLH_RIR_MSG]);
+			m_rir++;
+			pthread_spin_unlock(&m_dcca_spinlock[E_SLH_RIR_MSG]);
+		    }
+		    break;
+		case E_SLH_RIR_DROP_MSG:
+		    {
+			pthread_spin_lock(&m_dcca_spinlock[E_SLH_RIR_DROP_MSG]);
+			m_rir_drop++;
+			pthread_spin_unlock(&m_dcca_spinlock[E_SLH_RIR_DROP_MSG]);
+		    }
+		    break;
+		case E_SLH_RIR_TIMEOUT_MSG:
+		    {
+			pthread_spin_lock(&m_dcca_spinlock[E_SLH_RIR_TIMEOUT_MSG]);
+			m_rir_timeout++;
+			pthread_spin_unlock(&m_dcca_spinlock[E_SLH_RIR_TIMEOUT_MSG]);
+		    }
+		    break;
+		case E_SLH_RIA_SUCCESS_MSG:
+		    {
+			pthread_spin_lock(&m_dcca_spinlock[E_SLH_RIA_SUCCESS_MSG]);
+			m_ria_success++;
+			pthread_spin_unlock(&m_dcca_spinlock[E_SLH_RIA_SUCCESS_MSG]);
+		    }
+		    break;
+		case E_SLH_RIA_FAIL_MSG:
+		    {
+			pthread_spin_lock(&m_dcca_spinlock[E_SLH_RIA_FAIL_MSG]);
+			m_ria_fail++;
+			pthread_spin_unlock(&m_dcca_spinlock[E_SLH_RIA_FAIL_MSG]);
+		    }
+		    break;
+
+
+    // Sd Messages - TSR/TSA
+    case E_SD_TSR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_TSR_MSG]);
+        m_sd_tsr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_TSR_MSG]);
+      }
+      break;
+    case E_SD_TSR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_TSR_DROP_MSG]);
+        m_sd_tsr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_TSR_DROP_MSG]);
+      }
+      break;
+    case E_SD_TSR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_TSR_TIMEOUT_MSG]);
+        m_sd_tsr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_TSR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SD_TSA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_TSA_SUCCESS_MSG]);
+        m_sd_tsa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_TSA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SD_TSA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_TSA_FAIL_MSG]);
+        m_sd_tsa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_TSA_FAIL_MSG]);
+      }
+      break;
+
+    // Sd Messages - CCR/CCA
+    case E_SD_CCR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_CCR_MSG]);
+        m_sd_ccr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_CCR_MSG]);
+      }
+      break;
+    case E_SD_CCR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_CCR_DROP_MSG]);
+        m_sd_ccr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_CCR_DROP_MSG]);
+      }
+      break;
+    case E_SD_CCR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_CCR_TIMEOUT_MSG]);
+        m_sd_ccr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_CCR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SD_CCA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_CCA_SUCCESS_MSG]);
+        m_sd_cca_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_CCA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SD_CCA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_CCA_FAIL_MSG]);
+        m_sd_cca_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_CCA_FAIL_MSG]);
+      }
+      break;
+
+    // Sd Messages - RAR/RAA
+    case E_SD_RAR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_RAR_MSG]);
+        m_sd_rar++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_RAR_MSG]);
+      }
+      break;
+    case E_SD_RAR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_RAR_DROP_MSG]);
+        m_sd_rar_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_RAR_DROP_MSG]);
+      }
+      break;
+    case E_SD_RAR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_RAR_TIMEOUT_MSG]);
+        m_sd_rar_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_RAR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SD_RAA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_RAA_SUCCESS_MSG]);
+        m_sd_raa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_RAA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SD_RAA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SD_RAA_FAIL_MSG]);
+        m_sd_raa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SD_RAA_FAIL_MSG]);
+      }
+      break;
+
+
+    case E_SH_UDR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_UDR_MSG]);
+        m_sh_udr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_UDR_MSG]);
+      }
+      break;
+    case E_SH_UDR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_UDR_DROP_MSG]);
+        m_sh_udr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_UDR_DROP_MSG]);
+      }
+      break;
+    case E_SH_UDR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_UDR_TIMEOUT_MSG]);
+        m_sh_udr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_UDR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SH_UDA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_UDA_SUCCESS_MSG]);
+        m_sh_uda_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_UDA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SH_UDA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_UDA_FAIL_MSG]);
+        m_sh_uda_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_UDA_FAIL_MSG]);
+      }
+      break;
+
+    case E_SH_PUR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PUR_MSG]);
+        m_sh_pur++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PUR_MSG]);
+      }
+      break;
+    case E_SH_PUR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PUR_DROP_MSG]);
+        m_sh_pur_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PUR_DROP_MSG]);
+      }
+      break;
+    case E_SH_PUR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PUR_TIMEOUT_MSG]);
+        m_sh_pur_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PUR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SH_PUA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PUA_SUCCESS_MSG]);
+        m_sh_pua_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PUA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SH_PUA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PUA_FAIL_MSG]);
+        m_sh_pua_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PUA_FAIL_MSG]);
+      }
+      break;
+
+    case E_SH_SNR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_SNR_MSG]);
+        m_sh_snr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_SNR_MSG]);
+      }
+      break;
+    case E_SH_SNR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_SNR_DROP_MSG]);
+        m_sh_snr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_SNR_DROP_MSG]);
+      }
+      break;
+    case E_SH_SNR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_SNR_TIMEOUT_MSG]);
+        m_sh_snr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_SNR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SH_SNA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_SNA_SUCCESS_MSG]);
+        m_sh_sna_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_SNA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SH_SNA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_SNA_FAIL_MSG]);
+        m_sh_sna_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_SNA_FAIL_MSG]);
+      }
+      break;
+
+    case E_SH_PNR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PNR_MSG]);
+        m_sh_pnr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PNR_MSG]);
+      }
+      break;
+    case E_SH_PNR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PNR_DROP_MSG]);
+        m_sh_pnr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PNR_DROP_MSG]);
+      }
+      break;
+    case E_SH_PNR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PNR_TIMEOUT_MSG]);
+        m_sh_pnr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PNR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_SH_PNA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PNA_SUCCESS_MSG]);
+        m_sh_pna_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PNA_SUCCESS_MSG]);
+      }
+      break;
+    case E_SH_PNA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_SH_PNA_FAIL_MSG]);
+        m_sh_pna_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_SH_PNA_FAIL_MSG]);
+      }
+      break;
+
+//Cx 
+          case E_CX_UAR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_UAR_MSG]);
+        m_cx_uar++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_UAR_MSG]);
+      }
+      break;
+    case E_CX_UAR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_UAR_DROP_MSG]);
+        m_cx_uar_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_UAR_DROP_MSG]);
+      }
+      break;
+    case E_CX_UAR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_UAR_TIMEOUT_MSG]);
+        m_cx_uar_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_UAR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_UAA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_UAA_SUCCESS_MSG]);
+        m_cx_uaa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_UAA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_UAA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_UAA_FAIL_MSG]);
+        m_cx_uaa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_UAA_FAIL_MSG]);
+      }
+      break;
+
+    case E_CX_SAR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_SAR_MSG]);
+        m_cx_sar++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_SAR_MSG]);
+      }
+      break;
+    case E_CX_SAR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_SAR_DROP_MSG]);
+        m_cx_sar_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_SAR_DROP_MSG]);
+      }
+      break;
+    case E_CX_SAR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_SAR_TIMEOUT_MSG]);
+        m_cx_sar_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_SAR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_SAA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_SAA_SUCCESS_MSG]);
+        m_cx_saa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_SAA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_SAA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_SAA_FAIL_MSG]);
+        m_cx_saa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_SAA_FAIL_MSG]);
+      }
+      break;
+
+    case E_CX_LIR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_LIR_MSG]);
+        m_cx_lir++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_LIR_MSG]);
+      }
+      break;
+    case E_CX_LIR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_LIR_DROP_MSG]);
+        m_cx_lir_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_LIR_DROP_MSG]);
+      }
+      break;
+    case E_CX_LIR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_LIR_TIMEOUT_MSG]);
+        m_cx_lir_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_LIR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_LIA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_LIA_SUCCESS_MSG]);
+        m_cx_lia_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_LIA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_LIA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_LIA_FAIL_MSG]);
+        m_cx_lia_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_LIA_FAIL_MSG]);
+      }
+      break;
+
+    case E_CX_MAR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_MAR_MSG]);
+        m_cx_mar++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_MAR_MSG]);
+      }
+      break;
+    case E_CX_MAR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_MAR_DROP_MSG]);
+        m_cx_mar_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_MAR_DROP_MSG]);
+      }
+      break;
+    case E_CX_MAR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_MAR_TIMEOUT_MSG]);
+        m_cx_mar_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_MAR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_MAA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_MAA_SUCCESS_MSG]);
+        m_cx_maa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_MAA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_MAA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_MAA_FAIL_MSG]);
+        m_cx_maa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_MAA_FAIL_MSG]);
+      }
+      break;
+
+    case E_CX_RTR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_RTR_MSG]);
+        m_cx_rtr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_RTR_MSG]);
+      }
+      break;
+    case E_CX_RTR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_RTR_DROP_MSG]);
+        m_cx_rtr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_RTR_DROP_MSG]);
+      }
+      break;
+    case E_CX_RTR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_RTR_TIMEOUT_MSG]);
+        m_cx_rtr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_RTR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_RTA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_RTA_SUCCESS_MSG]);
+        m_cx_rta_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_RTA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_RTA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_RTA_FAIL_MSG]);
+        m_cx_rta_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_RTA_FAIL_MSG]);
+      }
+      break;
+
+    case E_CX_PPR_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_PPR_MSG]);
+        m_cx_ppr++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_PPR_MSG]);
+      }
+      break;
+    case E_CX_PPR_DROP_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_PPR_DROP_MSG]);
+        m_cx_ppr_drop++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_PPR_DROP_MSG]);
+      }
+      break;
+    case E_CX_PPR_TIMEOUT_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_PPR_TIMEOUT_MSG]);
+        m_cx_ppr_timeout++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_PPR_TIMEOUT_MSG]);
+      }
+      break;
+    case E_CX_PPA_SUCCESS_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_PPA_SUCCESS_MSG]);
+        m_cx_ppa_success++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_PPA_SUCCESS_MSG]);
+      }
+      break;
+    case E_CX_PPA_FAIL_MSG:
+      {
+        pthread_spin_lock(&m_dcca_spinlock[E_CX_PPA_FAIL_MSG]);
+        m_cx_ppa_fail++;
+        pthread_spin_unlock(&m_dcca_spinlock[E_CX_PPA_FAIL_MSG]);
+      }
+      break;
+
+
+		case E_UNEXPECTED_MSG :
+			{
+				//pthread_mutex_locklock(&m_dcca_mutex[E_UNEXPECTED_MSG]);
+				pthread_spin_lock(&m_dcca_spinlock[E_UNEXPECTED_MSG]);
+				m_unexpected++;
+				//pthread_mutex_lockunlock(&m_dcca_mutex[E_UNEXPECTED_MSG]);
+				pthread_spin_unlock(&m_dcca_spinlock[E_UNEXPECTED_MSG]);
+			}
+			break;
+
+		default :
+			break;
+	} /* end switch */
+
+	return;
+}
+
+void DiameterPeg::CummulateCount()
+{	
+	pthread_mutex_lock(&m_cummulation_mutex);	
+	m_cummulatedReq = m_cer + m_dwr + m_dpr + m_ccr_initial + m_ccr_update +  m_ccr_terminate + m_rar + m_asr + m_str; 
+	m_cummulatedAns = m_cea_success + m_dwa_success + m_dpa_success + m_cca_initial_success + m_cca_update_success +  m_cca_terminate_success + m_raa_success + m_asa_success + m_sta_success + m_cea_fail + m_dwa_fail + m_dpa_fail + m_cca_initial_fail + m_cca_update_fail +  m_cca_terminate_fail + m_raa_fail + m_asa_fail + m_sta_fail + m_error_bit;
+	pthread_mutex_unlock(&m_cummulation_mutex);	
+}
+
+//DiameterPeg* DiameterPeg::m_instance = NULL;

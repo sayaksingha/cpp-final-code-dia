@@ -1,0 +1,1540 @@
+< message >
+< command = CapabilityExchangeRequest>
+< cmd-code = 257 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = HostIPAddress  type = Address >
+< avp-code = 257 encrypt = yes multiple = yes >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = VendorId type = Integer32>
+< avp-code = 266 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = ProductName type = OctetString >
+< avp-code = 269 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = SupportedVendorId  type = Integer32>
+< avp-code = 265 encrypt = yes multiple = yes >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = AuthApplicationId  type = Integer32>
+< avp-code = 258 encrypt = yes multiple = yes >
+< avp-flags =  nulll mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = InbandSecurityId  type = Integer32>
+< avp-code = 299 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = AcctApplicationId  type = Unsigned32>
+< avp-code = 259 encrypt = yes multiple = yes >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< grouped = VendorSpecificApplicationId  multiple = yes >
+< grouped-avp-code = 260 encrypt = yes >
+< grouped-avp-flags = null mandatory null >
+< grouped-vendor-id = 10415 >
+< /grouped >
+
+< avp >
+< avp-name = FirmwareRevision type = Integer32>
+< avp-code = 267 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = SourceModuleId type = Integer32 >
+<avp-code = 21258 encrypt = yes multiple = no >
+<avp-flags = vendor mandatory null >
+<vendor-id = 34826 >
+</avp>
+
+<avp>
+<avp-name = DestModuleId type = Integer32 >
+<avp-code = 21259 encrypt = yes multiple = no >
+<avp-flags = vendor mandatory null >
+<vendor-id = 34826 >
+</avp>
+
+<avp>
+<avp-name = CCRequestNumber type = Unsigned32 >
+<avp-code = 415 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = ResultCode type = Unsigned32 >
+< avp-code =  268 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+
+<avp>
+     <avp-name = UniqueMsgRefNo type = OctetString >
+     <avp-code = 21250 encrypt = yes multiple = no >
+     <avp-flags = null mandatory protected >
+     <vendor-id = 0 >
+</avp>
+
+
+< /message >
+
+< message >
+< command = CapabilityExchangeAnswer >
+< cmd-code = 257 >
+< command-flags = resposnse proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = ResultCode type = Unsigned32 >
+< avp-code =  268 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = HostIPAddress  type = Address >
+< avp-code = 257 encrypt = yes multiple = yes >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = VendorId type = Integer32 >
+< avp-code = 266 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = ProductName type = OctetString >
+< avp-code = 269 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = ErrorMessage type = OctetString >
+< avp-code = 281 encrypt = yes multiple = no>
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = SupportedVendorId  type = Integer32 >
+< avp-code = 265 encrypt = yes multiple = yes >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = AuthApplicationId  type = Integer32 >
+< avp-code = 258 encrypt = yes multiple = yes >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = InbandSecurityId  type = Integer32 >
+< avp-code = 299 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = AcctApplicationId  type = Unsigned32 >
+< avp-code = 259 encrypt = yes multiple = yes >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< grouped = VendorSpecificApplicationId  multiple = yes >
+< grouped-avp-code = 260 encrypt = yes >
+< grouped-avp-flags = null mandatory null >
+< grouped-vendor-id = 10415 >
+< /grouped >
+
+< avp >
+< avp-name = FirmwareRevision type = Integer32 >
+< avp-code = 267 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+< /message >
+
+
+< message >
+< command = DisconnectPeerRequest>
+< cmd-code = 282  >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code = 264 encrypt = yes multiple = no >
+< avp-flags = null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags = null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+        < avp-name = DisconnectCause type = Enumerated >
+        < avp-code = 273 encrypt = yes multiple = no >
+        < avp-flags = null mandatory null >
+        < vendor-id = 0 >
+        < enum >
+                < name = REBOOTING code = 0 >
+                < name = BUSY code = 1 >
+                < name = DO_NOT_WANT_TO_TALK_TO_YOU code = 2 >
+        < /enum >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+< /message >
+
+
+< message >
+< command = DisconnectPeerAnswer >
+< cmd-code = 282  >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = ResultCode type = Unsigned32 >
+< avp-code = 268 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = ErrorMessage type = OctetString >
+< avp-code = 281 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+< /message >
+
+< message >
+< command =  DeviceWatchdogRequest >
+< cmd-code = 280 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code = 264 encrypt = yes multiple = no >
+< avp-flags = null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+< /message >
+
+
+< message >
+< command =  DeviceWatchdogAnswer >
+< cmd-code = 280 >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = ResultCode type = Unsigned32 >
+< avp-code = 268 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = ErrorMessage type = OctetString >
+< avp-code = 281 encrypt = yes multiple = no >
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+< /message >
+
+< message >
+< command =  ReAuthRequest >
+< cmd-code = 258 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+	
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = DestinationRealm type = OctetString >
+< avp-code = 283 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+	
+< avp >
+< avp-name = DestinationHost type = OctetString >
+< avp-code = 293 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+	
+< avp >
+        < avp-name = ReAuthRequestType type = Enumerated >
+        < avp-code = 285 encrypt = yes multiple = no >
+        < avp-flags =  null mandatory null >
+        < vendor-id = 10415 >
+        <enum>
+                < name = AUTHORIZE_ONLY code = 0 >
+                < name = AUTHORIZE_AUTHENTICATE code = 1 >        
+        </enum>
+< /avp >		
+
+<avp>
+   <avp-name = AuthApplicationId  type = Integer32 >
+   <avp-code = 258 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+     <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+   <avp-name = RouteRecord  type = OctetString >
+   <avp-code = 282  encrypt = no multiple = yes >
+   <avp-flags = null mandatory null >
+   <vendor-id = 0 >
+</avp>
+ 
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+< message >
+< command =  ReAuthAnswer >
+< cmd-code = 258 >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ResultCode  type = Unsigned32 >
+   <avp-code = 268 encrypt = no multiple = no  >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginHost type = OctetString >
+   <avp-code =  264 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null>
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginRealm  type = OctetString >
+   <avp-code = 296 encrypt = yes multiple = no  >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+   <avp-name = ErrorMessage type = OctetString >
+   <avp-code = 281 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ErrorReportingHost type = OctetString >
+   <avp-code = 294 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHost type = OctetString >
+   <avp-code = 292 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHostUsage type = Enumerated >
+   <avp-code = 261 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+   <enum>
+        < name = DONT_CACHE code = 0 >
+        < name = ALL_SESSION code = 1 >
+        < name = ALL_REALM code = 2 >
+        < name = REALM_AND_APPLICATION code = 3 >
+        < name = ALL_APPLICATION code = 4 >
+        < name = ALL_HOST code = 5 >
+        < name = ALL_USER code = 6 >
+   </enum>           
+</avp>
+
+<avp>
+   <avp-name = RedirectMaxCacheTime type = Unsigned32 >
+   <avp-code = 262 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+   <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+< message >
+< command =  SessionTerminationRequest >
+< cmd-code = 275 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = DestinationRealm type = OctetString >
+< avp-code = 283 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+	
+< avp >
+< avp-name = DestinationHost type = OctetString >
+< avp-code = 293 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+	
+<avp>
+   <avp-name = AuthApplicationId  type = Integer32 >
+   <avp-code = 258 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = TerminationCause type = Unsigned32 >
+   <avp-code = 295 encrypt = no multiple = no >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+   <enum>
+        < name = DIAMETER_LOGOUT code = 1 >
+        < name = DIAMETER_SERVICE_NOT_PROVIDED code = 2 >
+        < name = DIAMETER_BAD_ANSWER code = 3 >
+        < name = DIAMETER_ADMINISTRATIVE code = 4 >
+        < name = DIAMETER_LINK_BROKEN code = 5 >
+        < name = DIAMETER_AUTH_EXPIRED code = 6 >
+        < name = DIAMETER_USER_MOVED code = 7 >
+        < name = DIAMETER_SESSION_TIMEOUT code = 8 >
+   </enum>          
+</avp>
+
+<avp>
+   <avp-name = Class type = OctetString >
+   <avp-code = 25 encrypt = yes multiple = yes >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+     <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+   <avp-name = RouteRecord  type = OctetString >
+   <avp-code = 282  encrypt = no multiple = yes >
+   <avp-flags = null mandatory null >
+   <vendor-id = 0 >
+</avp>
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+
+</message>
+
+< message >
+< command =  SessionTerminationAnswer >
+< cmd-code = 275 >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ResultCode  type = Unsigned32 >
+   <avp-code = 268 encrypt = no multiple = no  >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginHost type = OctetString >
+   <avp-code =  264 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null>
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginRealm  type = OctetString >
+   <avp-code = 296 encrypt = yes multiple = no  >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+<avp>
+   <avp-name = Class type = OctetString >
+   <avp-code = 25 encrypt = yes multiple = yes >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+   <avp-name = ErrorMessage type = OctetString >
+   <avp-code = 281 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ErrorReportingHost type = OctetString >
+   <avp-code = 294 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHost type = OctetString >
+   <avp-code = 292 encrypt = no multiple = yes >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHostUsage type = Enumerated >
+   <avp-code = 261 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+   <enum>
+        < name = DONT_CACHE code = 0 >
+        < name = ALL_SESSION code = 1 >
+        < name = ALL_REALM code = 2 >
+        < name = REALM_AND_APPLICATION code = 3 >
+        < name = ALL_APPLICATION code = 4 >
+        < name = ALL_HOST code = 5 >
+        < name = ALL_USER code = 6 >
+   </enum>
+</avp>
+
+<avp>
+   <avp-name = RedirectMaxCacheTime type = Unsigned32 >
+   <avp-code = 262 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+   <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+< message >
+< command =  AbortSessionRequest >
+< cmd-code = 274 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = DestinationRealm type = OctetString >
+< avp-code = 283 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+	
+< avp >
+< avp-name = DestinationHost type = OctetString >
+< avp-code = 293 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+	
+<avp>
+   <avp-name = AuthApplicationId  type = Integer32 >
+   <avp-code = 258 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+     <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+   <avp-name = RouteRecord  type = OctetString >
+   <avp-code = 282  encrypt = no multiple = yes >
+   <avp-flags = null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+< message >
+< command =  AbortSessionAnswer >
+< cmd-code = 274 >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ResultCode  type = Unsigned32 >
+   <avp-code = 268 encrypt = no multiple = no  >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginHost type = OctetString >
+   <avp-code =  264 encrypt = yes multiple = no >
+   <avp-flags =  null mandatory null>
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = OriginRealm  type = OctetString >
+   <avp-code = 296 encrypt = yes multiple = no  >
+   <avp-flags =  null mandatory null >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+   <avp-name = ErrorMessage type = OctetString >
+   <avp-code = 281 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ErrorReportingHost type = OctetString >
+   <avp-code = 294 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHost type = OctetString >
+   <avp-code = 292 encrypt = no multiple = yes >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = RedirectHostUsage type = Enumerated >
+   <avp-code = 261 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+   <enum>
+        < name = DONT_CACHE code = 0 >
+        < name = ALL_SESSION code = 1 >
+        < name = ALL_REALM code = 2 >
+        < name = REALM_AND_APPLICATION code = 3 >
+        < name = ALL_APPLICATION code = 4 >
+        < name = ALL_HOST code = 5 >
+        < name = ALL_USER code = 6 >
+    </enum>      
+</avp>
+
+<avp>
+   <avp-name = RedirectMaxCacheTime type = Unsigned32 >
+   <avp-code = 262 encrypt = no multiple = no >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+   <grouped-vendor-id = 0 >
+ </grouped>
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+
+< message >
+< command =  AccountingRequest >
+< cmd-code = 271 >
+< command-flags = request proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = DestinationRealm type = OctetString >
+< avp-code = 283 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+        < avp-name = AccountingRecordType type = Enumerated >
+        < avp-code = 480 encrypt = yes multiple = no >
+        < avp-flags =  null mandatory protected >
+        < vendor-id = 0 >
+        <enum>
+                < name = EVENT_RECORD code = 1 >
+                < name = START_RECORD code = 2 >         
+                < name = INTERIM_RECORD code = 3 >         
+                < name = STOP_RECORD code = 4 >         
+        </enum>        
+< /avp >
+
+< avp >
+< avp-name = AccountingRecordNumber type = Unsigned32 >
+< avp-code = 485 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctApplicationId  type = Unsigned32 >
+< avp-code = 259 encrypt = yes multiple = no >
+< avp-flags = null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< grouped = VendorSpecificApplicationId  multiple = yes >
+< grouped-avp-code = 260 encrypt = yes >
+< grouped-avp-flags = null mandatory null >
+< grouped-vendor-id = 10415 >
+< /grouped >
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+< avp >
+< avp-name = DestinationHost type = OctetString >
+< avp-code = 293 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >	
+
+< avp-name = AccountingSubSessionId  type = Unsigned64 >
+< avp-code = 287 encrypt = yes multiple = no >
+< avp-flags = null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctSessionId type = OctetString >
+< avp-code = 44 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctMultiSessionId type = OctetString >
+< avp-code = 50 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = ErrorMessage type = OctetString >
+< avp-code = 281 encrypt = yes multiple = no>
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+   <avp-name = ErrorReportingHost type = OctetString >
+   <avp-code = 294 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = AcctInterimInterval  type = Unsigned32 >
+< avp-code = 85 encrypt = yes multiple = no >
+< avp-flags = null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+        < avp-name = AccountingRealtimeRequired  type = Enumerated >
+        < avp-code = 483 encrypt = yes multiple = no >
+        < avp-flags = null mandatory protected >
+        < vendor-id = 0 >
+        <enum>
+                < name = DELIVER_AND_GRANT code = 1 >
+                < name = RANT_AND_STORE code = 2 >
+                < name = GRANT_AND_LOSE code = 3 >
+        </enum>
+< /avp >
+
+<avp>
+   <avp-name = EventTimestamp type = Time >
+   <avp-code = 55 encrypt = no multiple = no >
+   <avp-flags =  null null null >
+   <vendor-id = 0 >
+</avp>
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+     <grouped-vendor-id = 0 >
+</grouped>
+
+<avp>
+   <avp-name = RouteRecord  type = OctetString >
+   <avp-code = 282  encrypt = no multiple = yes >
+   <avp-flags = null mandatory null >
+   <vendor-id = 0 >
+</avp>
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+
+</message>
+
+< message >
+< command =  AccountingResponse >
+< cmd-code = 271 >
+< command-flags = response proxyable error transmit >
+< protocol-version = 1 >
+< /command >
+
+<avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 0 >
+</avp>
+
+<avp>
+   <avp-name = ResultCode  type = Unsigned32 >
+   <avp-code = 268 encrypt = no multiple = no  >
+   <avp-flags =  null mandatory protected >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = OriginHost type = OctetString >
+< avp-code =  264 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginRealm  type = OctetString >
+< avp-code = 296 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+< avp-name = OriginStateId type = Unsigned32 >
+< avp-code = 278 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp >
+        < avp-name = AccountingRecordType type = Enumerated >
+        < avp-code = 480 encrypt = yes multiple = no >
+        < avp-flags =  null mandatory protected >
+        < vendor-id = 0 >
+        <enum>
+                < name = EVENT_RECORD code = 1 >
+                < name = START_RECORD code = 2 >
+                < name = INTERIM_RECORD code = 3 >
+                < name = STOP_RECORD code = 4 >
+        </enum> 
+< /avp >
+
+< avp >
+< avp-name = AccountingRecordNumber type = Unsigned32 >
+< avp-code = 485 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctApplicationId  type = Unsigned32 >
+< avp-code = 259 encrypt = yes multiple = no >
+< avp-flags = null null null >
+< vendor-id = 10415 >
+< /avp >
+
+< grouped = VendorSpecificApplicationId  multiple = yes >
+< grouped-avp-code = 260 encrypt = yes >
+< grouped-avp-flags = null mandatory null >
+< grouped-vendor-id = 10415 >
+< /grouped >
+
+< avp >
+< avp-name = UserName type = OctetString >
+< avp-code = 1 encrypt = yes multiple = no >
+< avp-flags =  null mandatory null >
+< vendor-id = 10415 >
+< /avp >
+
+< avp-name = AccountingSubSessionId  type = Unsigned64 >
+< avp-code = 287 encrypt = yes multiple = no >
+< avp-flags = null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctSessionId type = OctetString >
+< avp-code = 44 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = AcctMultiSessionId type = OctetString >
+< avp-code = 50 encrypt = yes multiple = no >
+< avp-flags =  null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+< avp >
+< avp-name = ErrorMessage type = OctetString >
+< avp-code = 281 encrypt = yes multiple = no>
+< avp-flags =  null null null >
+< vendor-id = 10415 >
+< /avp >
+
+<avp>
+   <avp-name = ErrorReportingHost type = OctetString >
+   <avp-code = 294 encrypt = no multiple = no >
+   <avp-flags =  null null protected >
+   <vendor-id = 0 >
+</avp>
+
+< avp >
+< avp-name = AcctInterimInterval  type = Unsigned32 >
+< avp-code = 85 encrypt = yes multiple = no >
+< avp-flags = null mandatory protected >
+< vendor-id = 0 >
+< /avp >
+
+
+< avp >
+        < avp-name = AccountingRealtimeRequired  type = Enumerated >
+        < avp-code = 483 encrypt = yes multiple = no >
+        < avp-flags = null mandatory protected >
+        < vendor-id = 0 >
+        <enum>
+                < name = DELIVER_AND_GRANT code = 1 >
+                < name = RANT_AND_STORE code = 2 >
+                < name = GRANT_AND_LOSE code = 3 >
+        </enum>
+< /avp >
+
+<avp>
+   <avp-name = EventTimestamp type = OctetString >
+   <avp-code = 55 encrypt = no multiple = no >
+   <avp-flags =  null null null >
+   <vendor-id = 0 >
+</avp>
+
+<grouped = ProxyInfo multiple = yes >
+     <grouped-avp-code = 284 encrypt = no >
+     <grouped-avp-flags = null mandatory null >
+     <grouped-vendor-id = 0 >
+</grouped>
+
+<avp>
+   <avp-name = RouteRecord  type = OctetString >
+   <avp-code = 282  encrypt = no multiple = yes >
+   <avp-flags = null mandatory null >
+   <vendor-id = 0 >
+</avp>        
+
+<avp>
+<avp-name = CCRequestType type = Enumerated >
+<avp-code = 416 encrypt = yes multiple = no  >
+<avp-flags =  null mandatory null >
+<vendor-id = 0 >
+<enum>
+< name = INITIAL_REQUEST code = 1 >
+< name = UPDATE_REQUEST code = 2 >
+< name = TERMINATION_REQUEST code = 3 >
+< name = EVENT_REQUEST code = 4 >
+</enum>
+</avp>
+</message>
+
+<grouped-avp>
+   <grouped-avp-name = ProxyInfo type = Grouped >
+   <grouped-avp-code = 284 encrypt = yes >
+   <grouped-avp-flags = null mandatory null >
+   <grouped-vendor-id = 0 >
+
+   <avp>
+      <avp-name = ProxyHost  type = OctetString >
+      <avp-code = 280  encrypt = no multiple = no >
+      <avp-flags = null mandatory null >
+      <vendor-id = 0 >
+   </avp>
+
+   <avp>
+      <avp-name = ProxyState  type = OctetString >
+      <avp-code = 33  encrypt = no multiple = no >
+      <avp-flags = null mandatory null >
+      <vendor-id = 0 >
+   </avp>
+
+</grouped-avp>
+
+< grouped-avp >
+        < grouped-avp-name = VendorSpecificApplicationId  type = Grouped >
+        < grouped-avp-code = 260 encrypt = yes  >
+        < grouped-avp-flags = null mandatory null >
+        < grouped-vendor-id = 10415 >
+
+        < avp >
+        < avp-name = VendorId  type = Integer32 >
+        < avp-code = 266  encrypt = yes multiple = no >
+        < avp-flags = null mandatory null >
+        < vendor-id = 10415 >
+        < /avp >
+
+        < avp >
+        < avp-name = AuthApplicationId type = Integer32 >
+        < avp-code = 258 encrypt = yes multiple = no >
+        < avp-flags = null mandatory null >
+        < vendor-id = 10415 >
+        < /avp >
+
+        < avp >
+        < avp-name = AcctApplicationId  type = Unsigned32 >
+        < avp-code = 259 encrypt = yes multiple = no >
+        < avp-flags = null null null >
+        < vendor-id = 10415 >
+        < /avp >
+
+< /grouped-avp >
+

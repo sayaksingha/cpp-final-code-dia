@@ -1,0 +1,890 @@
+-- diameter.dictionary.sd
+-- Sd reference point (PCRF <-> TDF), 3GPP TS 29.212. Application-Id = 16777303
+-- Vendor-Id = 10415 (3GPP)
+
+-- =====================================================================
+-- 1. TDF-Session-Request (TSR) - PCRF -> TDF
+-- =====================================================================
+<message>
+
+    <command = TDFSessionRequest>
+        <cmd-code = 8388637 >
+        <command-flags = request proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <grouped = VendorSpecificApplicationId multiple = yes >
+        <grouped-avp-code = 260 encrypt = yes >
+        <grouped-avp-flags = null mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationRealm type = OctetString >
+        <avp-code = 283 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationHost type = OctetString >
+        <avp-code = 293 encrypt = yes multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <grouped = SupportedFeatures multiple = yes >
+        <grouped-avp-code = 628 encrypt = yes >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = FramedIPAddress type = Address >
+        <avp-code = 8 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = FramedIPv6Prefix type = OctetString >
+        <avp-code = 97 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = IPCANType type = Enumerated >
+        <avp-code = 1027 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = 3GPP_GPRS code = 0 >
+            < name = DOCSIS code = 1 >
+            < name = xDSL code = 2 >
+            < name = WiMAX code = 3 >
+            < name = 3GPP2 code = 4 >
+            < name = 3GPP_EPS code = 5 >
+            < name = Non_3GPP_EPS code = 6 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RATType type = Enumerated >
+        <avp-code = 1032 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = WLAN code = 0 >
+            < name = VIRTUAL code = 1 >
+            < name = UTRAN code = 1000 >
+            < name = GERAN code = 1001 >
+            < name = GAN code = 1002 >
+            < name = HSPA_EVOLUTION code = 1003 >
+            < name = EUTRAN code = 1004 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = CalledStationId type = OctetString >
+        <avp-code = 30 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <grouped = ADCRuleInstall multiple = yes >
+        <grouped-avp-code = 1092 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+        </enum>
+    </avp>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord type = OctetString >
+        <avp-code = 282 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+</message>
+
+-- =====================================================================
+-- 2. TDF-Session-Answer (TSA) - TDF -> PCRF
+-- =====================================================================
+<message>
+
+    <command = TDFSessionAnswer>
+        <cmd-code = 8388637 >
+        <command-flags = null proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <grouped = VendorSpecificApplicationId multiple = yes >
+        <grouped-avp-code = 260 encrypt = yes >
+        <grouped-avp-flags = null mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+            <avp-name = ResultCode type = Unsigned32 >
+            <avp-code = 268 encrypt = no multiple = no >
+            <avp-flags = null mandatory protected >
+        </avp>
+    <grouped = ExperimentalResult multiple = no >
+            <grouped-avp-code = 297 encrypt = no >
+            <grouped-avp-flags = null mandatory protected >
+        </grouped>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <grouped = SupportedFeatures multiple = yes >
+        <grouped-avp-code = 628 encrypt = yes >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <grouped = ADCRuleReport multiple = yes >
+            <grouped-avp-code = 1097 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <grouped = EventReportIndication multiple = no >
+            <grouped-avp-code = 1033 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <avp>
+            <avp-name = ErrorMessage type = OctetString >
+            <avp-code = 281 encrypt = no multiple = no >
+            <avp-flags = null null protected >
+        </avp>
+    <avp>
+            <avp-name = ErrorReportingHost type = OctetString >
+            <avp-code = 294 encrypt = no multiple = no >
+            <avp-flags = null null null >
+        </avp>
+    <grouped = FailedAVP multiple = yes >
+            <grouped-avp-code = 279 encrypt = no >
+            <grouped-avp-flags = null mandatory null >
+            <grouped-vendor-id = 0 >
+        </grouped>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord type = OctetString >
+        <avp-code = 282 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+</message>
+
+-- =====================================================================
+-- 3. CC-Request Sd (CCR) - TDF -> PCRF
+-- =====================================================================
+<message>
+
+    <command = CreditControlRequestSd>
+        <cmd-code = 272 >
+        <command-flags = request proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = AuthApplicationId type = Unsigned32 >
+        <avp-code = 258 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationRealm type = OctetString >
+        <avp-code = 283 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationHost type = OctetString >
+        <avp-code = 293 encrypt = yes multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = CCRequestType type = Enumerated >
+        <avp-code = 416 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = INITIAL_REQUEST code = 1 >
+            < name = UPDATE_REQUEST code = 2 >
+            < name = TERMINATION_REQUEST code = 3 >
+            < name = EVENT_REQUEST code = 4 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = CCRequestNumber type = Unsigned32 >
+        <avp-code = 415 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <avp>
+        <avp-name = FramedIPAddress type = Address >
+        <avp-code = 8 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = FramedIPv6Prefix type = OctetString >
+        <avp-code = 97 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <grouped = ADCRuleReport multiple = yes >
+            <grouped-avp-code = 1097 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <grouped = ApplicationDetectionInformation multiple = yes >
+        <grouped-avp-code = 1098 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+        </enum>
+    </avp>
+    <grouped = EventReportIndication multiple = no >
+            <grouped-avp-code = 1033 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord type = OctetString >
+        <avp-code = 282 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+    <grouped = SupportedFeatures multiple = yes >
+        <grouped-avp-code = 628 encrypt = yes >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</message>
+
+-- =====================================================================
+-- 4. CC-Answer Sd (CCA) - PCRF -> TDF
+-- =====================================================================
+<message>
+
+    <command = CreditControlAnswerSd>
+        <cmd-code = 272 >
+        <command-flags = null proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = AuthApplicationId type = Unsigned32 >
+        <avp-code = 258 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+            <avp-name = ResultCode type = Unsigned32 >
+            <avp-code = 268 encrypt = no multiple = no >
+            <avp-flags = null mandatory protected >
+        </avp>
+    <grouped = ExperimentalResult multiple = no >
+            <grouped-avp-code = 297 encrypt = no >
+            <grouped-avp-flags = null mandatory protected >
+        </grouped>
+    <avp>
+        <avp-name = CCRequestType type = Enumerated >
+        <avp-code = 416 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = INITIAL_REQUEST code = 1 >
+            < name = UPDATE_REQUEST code = 2 >
+            < name = TERMINATION_REQUEST code = 3 >
+            < name = EVENT_REQUEST code = 4 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = CCRequestNumber type = Unsigned32 >
+        <avp-code = 415 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = FramedIPv6Prefix type = OctetString >
+        <avp-code = 97 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+        </enum>
+    </avp>
+    <grouped = EventReportIndication multiple = no >
+            <grouped-avp-code = 1033 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <avp>
+            <avp-name = RedirectHost type = OctetString >
+            <avp-code = 292 encrypt = no multiple = yes >
+            <avp-flags = null null null >
+        </avp>
+    <avp>
+            <avp-name = RedirectHostUsage type = Enumerated >
+            <avp-code = 261 encrypt = no multiple = no >
+            <avp-flags = null null null >
+            <enum>
+                < name = DONT_CACHE code = 0 >
+                < name = ALL_SESSION code = 1 >
+                < name = ALL_REALM code = 2 >
+                < name = REALM_AND_APPLICATION code = 3 >
+                < name = ALL_APPLICATION code = 4 >
+                < name = ALL_HOST code = 5 >
+                < name = ALL_USER code = 6 >
+            </enum>
+        </avp>
+    <avp>
+            <avp-name = RedirectMaxCacheTime type = Unsigned32 >
+            <avp-code = 262 encrypt = no multiple = no >
+            <avp-flags = null null null >
+        </avp>
+    <grouped = ADCRuleRemove multiple = yes >
+        <grouped-avp-code = 1093 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <grouped = ADCRuleInstall multiple = yes >
+        <grouped-avp-code = 1092 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+            <avp-name = ErrorMessage type = OctetString >
+            <avp-code = 281 encrypt = no multiple = no >
+            <avp-flags = null null protected >
+        </avp>
+    <avp>
+            <avp-name = ErrorReportingHost type = OctetString >
+            <avp-code = 294 encrypt = no multiple = no >
+            <avp-flags = null null null >
+        </avp>
+    <grouped = FailedAVP multiple = yes >
+            <grouped-avp-code = 279 encrypt = no >
+            <grouped-avp-flags = null mandatory null >
+            <grouped-vendor-id = 0 >
+        </grouped>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord type = OctetString >
+        <avp-code = 282 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+    <grouped = SupportedFeatures multiple = yes >
+        <grouped-avp-code = 628 encrypt = yes >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</message>
+
+-- =====================================================================
+-- 5. Re-Auth-Request Sd (RAR) - PCRF -> TDF
+-- =====================================================================
+<message>
+
+    <command = ReAuthRequestSd>
+        <cmd-code = 258 >
+        <command-flags = request proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = AuthApplicationId type = Unsigned32 >
+        <avp-code = 258 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationRealm type = OctetString >
+        <avp-code = 283 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = DestinationHost type = OctetString >
+        <avp-code = 293 encrypt = yes multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = ReAuthRequestType type = Enumerated >
+        <avp-code = 285 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = AUTHORIZE_ONLY code = 0 >
+            < name = AUTHORIZE_AUTHENTICATE code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = SessionReleaseCause type = Enumerated >
+        <avp-code = 1045 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = UNSPECIFIED_REASON code = 0 >
+            < name = UE_SUBSCRIPTION_REASON code = 1 >
+            < name = INSUFFICIENT_SERVER_RESOURCES code = 2 >
+        </enum>
+    </avp>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+        </enum>
+    </avp>
+    <grouped = EventReportIndication multiple = no >
+            <grouped-avp-code = 1033 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <grouped = ADCRuleRemove multiple = yes >
+        <grouped-avp-code = 1093 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <grouped = ADCRuleInstall multiple = yes >
+        <grouped-avp-code = 1092 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord type = OctetString >
+        <avp-code = 282 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+</message>
+
+-- =====================================================================
+-- 6. Re-Auth-Answer Sd (RAA) - TDF -> PCRF
+-- =====================================================================
+<message>
+
+    <command = ReAuthAnswerSd>
+        <cmd-code = 258 >
+        <command-flags = null proxyable null null >
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code = 263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code = 264 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = OriginRealm type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+            <avp-name = ResultCode type = Unsigned32 >
+            <avp-code = 268 encrypt = no multiple = no >
+            <avp-flags = null mandatory protected >
+        </avp>
+    <grouped = ExperimentalResult multiple = no >
+            <grouped-avp-code = 297 encrypt = no >
+            <grouped-avp-flags = null mandatory protected >
+        </grouped>
+    <avp>
+            <avp-name = OriginStateId type = Unsigned32 >
+            <avp-code = 278 encrypt = yes multiple = no >
+            <avp-flags = null mandatory null >
+        </avp>
+    <grouped = ADCRuleReport multiple = yes >
+            <grouped-avp-code = 1097 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <grouped = EventReportIndication multiple = no >
+            <grouped-avp-code = 1033 encrypt = no >
+            <grouped-avp-flags = vendor null null >
+            <grouped-vendor-id = 10415 >
+        </grouped>
+    <avp>
+            <avp-name = ErrorMessage type = OctetString >
+            <avp-code = 281 encrypt = no multiple = no >
+            <avp-flags = null null protected >
+        </avp>
+    <avp>
+            <avp-name = ErrorReportingHost type = OctetString >
+            <avp-code = 294 encrypt = no multiple = no >
+            <avp-flags = null null null >
+        </avp>
+    <grouped = FailedAVP multiple = yes >
+            <grouped-avp-code = 279 encrypt = no >
+            <grouped-avp-flags = null mandatory null >
+            <grouped-vendor-id = 0 >
+        </grouped>
+    <grouped = ProxyInfo multiple = yes >
+        <grouped-avp-code = 284 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+</message>
+
+-- =====================================================================
+
+
+-- FailedAVP
+<grouped-avp>
+    <grouped-avp-name = FailedAVP type = Grouped >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 0 >
+    <avp>
+        <avp-name = ErrorMessage type = OctetString>
+        <avp-code = 281 encrypt = no multiple = no >
+        <avp-flags = null null protected >
+        <vendor-id = 0 >
+    </avp>
+</grouped-avp>
+
+-- SupportedFeatures
+<grouped-avp>
+    <grouped-avp-name = SupportedFeatures type = Grouped >
+    <grouped-avp-code = 628 encrypt = yes >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = VendorId type = Integer32 >
+        <avp-code = 266 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = FeatureListID type = Unsigned32 >
+        <avp-code = 629 encrypt = yes multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = FeatureList type = Unsigned32 >
+        <avp-code = 630 encrypt = yes multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+-- ProxyInfo
+<grouped-avp>
+    <grouped-avp-name = ProxyInfo type = Grouped >
+    <grouped-avp-code = 284 encrypt = yes >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = ProxyHost type = OctetString >
+        <avp-code = 280 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ProxyState type = OctetString >
+        <avp-code = 33 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+-- ExperimentalResult
+<grouped-avp>
+    <grouped-avp-name = ExperimentalResult type = Grouped >
+    <grouped-avp-code = 297 encrypt = yes >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = VendorId type = Integer32 >
+        <avp-code = 266 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ExperimentalResultCode type = Unsigned32 >
+        <avp-code = 298 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+-- EventReportIndication (minimal — only Event-Trigger modelled)
+-- Expand this block against 3GPP TS 29.212 if more members are needed
+-- (e.g. Application-Detection-Information, TFT-Packet-Filter-Information)
+<grouped-avp>
+    <grouped-avp-name = EventReportIndication type = Grouped >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+-- ADCRuleInstall
+<grouped-avp>
+    <grouped-avp-name = ADCRuleInstall type = Grouped >
+    <grouped-avp-code = 1092 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <grouped = ADCRuleDefinition multiple = yes >
+        <grouped-avp-code = 1094 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</grouped-avp>
+
+-- ADCRuleRemove
+<grouped-avp>
+    <grouped-avp-name = ADCRuleRemove type = Grouped >
+    <grouped-avp-code = 1093 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+-- ADCRuleDefinition
+<grouped-avp>
+    <grouped-avp-name = ADCRuleDefinition type = Grouped >
+    <grouped-avp-code = 1094 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = TDFApplicationIdentifier type = OctetString >
+        <avp-code = 1088 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+-- ADCRuleReport
+<grouped-avp>
+    <grouped-avp-name = ADCRuleReport type = Grouped >
+    <grouped-avp-code = 1097 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = RuleFailureCode type = Enumerated >
+        <avp-code = 1031 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = UNKNOWN_RULE_NAME code = 1 >
+            < name = RATING_GROUP_ERROR code = 2 >
+            < name = SERVICE_IDENTIFIER_ERROR code = 3 >
+            < name = GW_PCEF_MALFUNCTION code = 4 >
+            < name = RESOURCES_LIMITATION code = 5 >
+            < name = MAX_NR_BEARERS_REACHED code = 6 >
+            < name = UNKNOWN_BEARER_ID code = 7 >
+            < name = MISSING_BEARER_ID code = 8 >
+            < name = MISSING_FLOW_INFORMATION code = 9 >
+            < name = RESOURCE_ALLOCATION_FAILURE code = 10 >
+            < name = UNSUCCESSFUL_QOS_VALIDATION code = 11 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+-- ApplicationDetectionInformation
+<grouped-avp>
+    <grouped-avp-name = ApplicationDetectionInformation type = Grouped >
+    <grouped-avp-code = 1098 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = TDFApplicationIdentifier type = OctetString >
+        <avp-code = 1088 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = TDFApplicationInstanceIdentifier type = OctetString >
+        <avp-code = 2802 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>

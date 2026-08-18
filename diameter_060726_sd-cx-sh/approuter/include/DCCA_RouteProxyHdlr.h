@@ -1,0 +1,51 @@
+//static const char *id = " @(#) $Id: DCCA_RouteProxyHdlr.h,v 1.1.2.2 2021/01/28 00:05:02 anandhv Exp $";
+//----------------------------------------------------------------------
+// NAME
+// diameter_cc_application.cc
+//
+// COPYRIGHT
+// Tayana Software Solutions Pvt Ltd -- Copyright(C) 2007
+// All rights reserved. No part of this computer program
+// may be used or reproduced in any form by any
+// means without prior written permission of
+// Tayana Software Solutions Pvt Ltd
+//
+// DESCRIPTION
+//
+// Originated :                                     Date:
+//----------------------------------------------------------------------
+#include "DCCA_Header.h" 
+#include "DCCA_Router.h" 
+#include "DCCA_Router.tcc" 
+#include "aaa_session_storage.h"
+#include "aaa_error_msg.h"
+//#include "diameter_cc_application.h"
+#include "gx/include/CCRequest.h"
+#include "ro/include/CCRequest.h"
+#include "aaa_session_db.h"
+#include "aaa_session_msg_rx.h"
+#include "diameter_cc_parser.h"
+#include "DCCA_PrepareInputMapData.h"
+#include "DCCA_PrepareInputMapData.tcc"
+#include "sd/include/CreditControlRequest.h"
+	
+using namespace GX;
+
+class DCCA_RouteProxyHdlr:public AAA_ProxyHandler
+{
+	private:
+		AAA_ProxySessionSyncHdlr *mAAA_ProxySessionSyncHdlr;
+
+	public:
+		DCCA_RouteProxyHdlr(list<diameter_unsigned32_t> appIdList);
+
+		AAAReturnCode 	RequestMsg(DiameterMsg &msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest);
+		AAAReturnCode 	AnswerMsg(DiameterMsg &msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest);
+		AAAReturnCode 	ErrorMsg(DiameterMsg &msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest);
+
+		void RegisterSyncHdlr( AAA_ProxySessionSyncHdlr &lAAA_ProxySessionSyncHdlr );
+
+		int GetSyncSessionData(SyncDccaProxySessionData &data);
+};
+
+

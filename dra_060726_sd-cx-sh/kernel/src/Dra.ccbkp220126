@@ -1,0 +1,3784 @@
+//----------------------------------------------------------------------
+// NAME :  Dra.cc
+//
+// COPYRIGHT :  Tayana Software Solutions Pvt Ltd -- Copyright(C) 2018
+//              All rights reserved. No part of this computer program
+//              may be used or reproduced in any form by any
+//              means without prior written permission of
+//              Tayana Software Solutions Pvt Ltd
+//
+// DESCRIPTION
+//
+// Originated :                                     Date:
+//----------------------------------------------------------------------
+#include "Dra.h"
+
+#include "aaa_session_storage.h"
+
+extern struct timeval gTimeValue;
+extern struct tm *gLocalTime;
+
+extern UINT16 gMaxLicCount;
+extern BOOLEAN gtimeout;
+extern FILE *gLicPeg;
+extern FILE *gLicPegRx;
+extern FILE *gLicPegSy;
+extern FILE *gLicPegS6a;
+extern bool gClearFlag;
+
+extern TEXT gLicPegFilePath[MAX_FILE_PATH + 1];
+extern TEXT gLicPegFile[MAX_FILE_NAME + MAX_FILE_PATH + 1];
+
+extern UINT32 gPegDetails[TSS_DRA_APP_MAX_PEG_EVENTS];
+extern UINT32 *gPreviousPeg;
+
+constexpr int DIA_AVP_MSISDN = 44400;
+constexpr int DIA_AVP_IMSI = 44401;
+constexpr int TERMINATE = 0;
+
+#define MSCC_DECODE()                                                                                                                               \
+	try                                                                                                                                             \
+	{                                                                                                                                               \
+		auto lMSCC = lCCASPtr->getMultipleServicesCreditControlGrpList();                                                                           \
+		for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)                                                                                    \
+		{                                                                                                                                           \
+			int lRG = 0;                                                                                                                            \
+			try                                                                                                                                     \
+			{                                                                                                                                       \
+				lRG = (*it)->getRatingGroup()->getValue();                                                                                          \
+			}                                                                                                                                       \
+			catch (...)                                                                                                                             \
+			{                                                                                                                                       \
+				lRG = 0;                                                                                                                            \
+			}                                                                                                                                       \
+			try                                                                                                                                     \
+			{                                                                                                                                       \
+				auto lMsccInfoIt = mMsccInfo.find(lRG);                                                                                             \
+				if (lMsccInfoIt != mMsccInfo.end())                                                                                                 \
+				{                                                                                                                                   \
+					lMsccInfoIt->second.mGsuTotal = lMsccInfoIt->second.mGsuTotal + (*it)->getGrantedServiceUnit()->getCCTotalOctets()->getValue(); \
+				}                                                                                                                                   \
+				else                                                                                                                                \
+				{                                                                                                                                   \
+					MsccInfo lMsccInfo;                                                                                                             \
+					memset(&lMsccInfo, 0, sizeof(lMsccInfo));                                                                                       \
+					lMsccInfo.mGsuTotal = (*it)->getGrantedServiceUnit()->getCCTotalOctets()->getValue();                                           \
+					mMsccInfo[lRG] = lMsccInfo;                                                                                                     \
+				}                                                                                                                                   \
+			}                                                                                                                                       \
+			catch (...)                                                                                                                             \
+			{                                                                                                                                       \
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception While Fetching GSU \n", lLogText.c_str()));                                           \
+			}                                                                                                                                       \
+		}                                                                                                                                           \
+	}                                                                                                                                               \
+	catch (...)                                                                                                                                     \
+	{                                                                                                                                               \
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception While Fetching Mscc for GSU \n", lLogText.c_str()));                                          \
+	}
+
+//-------------------------------------------------------------------------------
+// METHOD      : Dra
+// DESCRIPTION : Parameter Constructor
+// PARAMETER   : AAA_Task &task, DraRouting &routing
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+Dra::Dra(AAA_Task &task, DraRouting &routing, int ModuleId) : DiameterGxProxySession(task, ModuleId), mTask(task), mRouting(&routing)
+{
+	mDestPeerEntry = nullptr;
+	mSourcePeerEntry = nullptr;
+	mRouting = &routing;
+	mModuleId = ModuleId;
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ~Dra
+// DESCRIPTION : Destructor
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+Dra::~Dra()
+{
+	mDestPeerEntry = nullptr;
+	mSourcePeerEntry = nullptr;
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : CreateInstance
+// DESCRIPTION : CreateInstance of Dra
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+DiameterGxProxySession *Dra::CreateInstance()
+{
+	return new Dra(mTask, *(mRouting), mModuleId);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : GetModuleId()
+// DESCRIPTION : To Provide the Module Id
+// PARAMETER   :
+// RETURN      : Module Id
+// THROWS      :
+//-------------------------------------------------------------------------------
+int Dra::GetModuleId()
+{
+	return mModuleId;
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : GetRoutingDetails
+// DESCRIPTION : Get Routing Details from Routing.xml file
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : Peer details
+// THROWS      :
+//-------------------------------------------------------------------------------
+BOOLEAN Dra::GetRoutingDetails(DiameterMsg &msg, DiameterPeerEntry *&dest)
+{
+	std::multimap<int, std::string> codeMap;
+	std::map<int, DictionaryData> supportedAVP;
+	BOOLEAN lNewLogicFlag = false;
+
+	std::string foundPeer;
+	std::string avpValue;
+	BOOLEAN invalidCode = false;
+
+	list<ActivePeerData>::iterator Iterator;
+
+	supportedAVP = mRouting->getSupportedAVP();
+
+	std::string lLogText = LOG_DIAMETER_AVPS(msg);
+
+	for (map<int, DictionaryData>::iterator it = supportedAVP.begin(); it != supportedAVP.end(); it++)
+	{
+		avpValue.clear();
+
+		try
+		{
+			BOOLEAN lInterfaceObj = false;
+			list<DiameterBaseInterface *> lList;
+
+			if (msg.hdr.mApplId == AAA_Gx_APP_ID)
+			{
+				GX::CCRequest *lCCRequest = reinterpret_cast<GX::CCRequest *>(msg.baseClass.get());
+
+				#pragma message("What is the purpose of NewLogicFlag?");
+				AvpCodePathDet lAvpCodePathDet;
+				if (true == mRouting->getAvpCodePathDet(msg.hdr.mApplId, it->first, lAvpCodePathDet))
+				{
+					lNewLogicFlag = true;
+					int size = lAvpCodePathDet.avpCodePath.size();
+					lInterfaceObj = lCCRequest->FindAll(&msg.rawbyteArray, lAvpCodePathDet.avpCodePath, size, 1, lList, true);
+				}
+				else
+				{
+					lNewLogicFlag = false;
+					lInterfaceObj = lCCRequest->FindAll(&msg.rawbyteArray, it->first, lList, true);
+				}
+				if (!lInterfaceObj)
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Not Found NLF:%d\n", lLogText.c_str(), it->first, lNewLogicFlag));
+				}
+				else
+				{
+					for (auto *item : lList)
+					{
+						switch (item->GetDataType())
+						{
+						case UNSIGNED32_TYPE:
+							avpValue = (reinterpret_cast<Unsigned32 *>(item))->ToString();
+							break;
+						case ENUMERATED_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER32_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER64_TYPE:
+							avpValue = (reinterpret_cast<Integer64 *>(item))->ToString();
+							break;
+						case UNSIGNED64_TYPE:
+							avpValue = (reinterpret_cast<Unsigned64 *>(item))->ToString();
+							break;
+						case OCTETSTRING_TYPE:
+							avpValue = (reinterpret_cast<OctetString *>(item))->ToString();
+							break;
+						default:
+						{
+							invalidCode = true;
+							break;
+						}
+						}
+
+						if (invalidCode == false)
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Value:%s NLF:%d\n", lLogText.c_str(), it->first, avpValue.c_str(), lNewLogicFlag));
+							codeMap.insert(make_pair(it->first, avpValue));
+						}
+					}
+				}
+
+				lList.clear();
+			}
+			else if (msg.hdr.mApplId == AAA_Ro_APP_ID)
+			{
+				RO::CCRequest *lCCRequest = reinterpret_cast<RO::CCRequest *>(msg.baseClass.get());
+				lInterfaceObj = lCCRequest->FindAll(&msg.rawbyteArray, it->first, lList, true);
+				if (!lInterfaceObj)
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Not Found\n", lLogText.c_str(), it->first));
+				}
+				else
+				{
+					for (auto *item : lList)
+					{
+						switch (item->GetDataType())
+						{
+						case UNSIGNED32_TYPE:
+							avpValue = (reinterpret_cast<Unsigned32 *>(item))->ToString();
+							break;
+						case ENUMERATED_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER32_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER64_TYPE:
+							avpValue = (reinterpret_cast<Integer64 *>(item))->ToString();
+							break;
+						case UNSIGNED64_TYPE:
+							avpValue = (reinterpret_cast<Unsigned64 *>(item))->ToString();
+							break;
+						case OCTETSTRING_TYPE:
+							avpValue = (reinterpret_cast<OctetString *>(item))->ToString();
+							break;
+						default:
+						{
+							invalidCode = true;
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d \n", lLogText.c_str(), it->first)); // TBC-Anshul 26-12-18
+							break;
+						}
+						}
+
+						if (invalidCode == false)
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Value:%s\n", lLogText.c_str(), it->first, avpValue.c_str()));
+							codeMap.insert(make_pair(it->first, avpValue));
+						}
+					}
+				}
+
+				lList.clear();
+			}
+			else if (msg.hdr.mApplId == AAA_Rx_APP_ID)
+			{
+				RX::AARequest *lAARequest = reinterpret_cast<RX::AARequest *>(msg.baseClass.get());
+				lInterfaceObj = lAARequest->FindAll(&msg.rawbyteArray, it->first, lList, true);
+				if (!lInterfaceObj)
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Not Found\n", lLogText.c_str(), it->first));
+				}
+				else
+				{
+					for (auto *item : lList)
+					{
+						switch (item->GetDataType())
+						{
+						case UNSIGNED32_TYPE:
+							avpValue = (reinterpret_cast<Unsigned32 *>(item))->ToString();
+							break;
+						case ENUMERATED_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER32_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER64_TYPE:
+							avpValue = (reinterpret_cast<Integer64 *>(item))->ToString();
+							break;
+						case UNSIGNED64_TYPE:
+							avpValue = (reinterpret_cast<Unsigned64 *>(item))->ToString();
+							break;
+						case OCTETSTRING_TYPE:
+							avpValue = (reinterpret_cast<OctetString *>(item))->ToString();
+							break;
+						default:
+						{
+							invalidCode = true;
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d \n", lLogText.c_str(), it->first)); // TBC-Anshul 26-12-18
+							break;
+						}
+						}
+						if (invalidCode == false)
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Value:%s\n", lLogText.c_str(), it->first, avpValue.c_str()));
+							codeMap.insert(make_pair(it->first, avpValue));
+						}
+					}
+				}
+				lList.clear();
+			}
+			else if (msg.hdr.mApplId == AAA_Sy_APP_ID)
+			{
+				SY::SLRequest *lSLRequest = reinterpret_cast<SY::SLRequest *>(msg.baseClass.get());
+				lInterfaceObj = lSLRequest->FindAll(&msg.rawbyteArray, it->first, lList, true);
+				if (!lInterfaceObj)
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Not Found\n", lLogText.c_str(), it->first));
+				}
+				else
+				{
+					for (auto *item : lList)
+					{
+						switch (item->GetDataType())
+						{
+						case UNSIGNED32_TYPE:
+							avpValue = (reinterpret_cast<Unsigned32 *>(item))->ToString();
+							break;
+						case ENUMERATED_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER32_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER64_TYPE:
+							avpValue = (reinterpret_cast<Integer64 *>(item))->ToString();
+							break;
+						case UNSIGNED64_TYPE:
+							avpValue = (reinterpret_cast<Unsigned64 *>(item))->ToString();
+							break;
+						case OCTETSTRING_TYPE:
+							avpValue = (reinterpret_cast<OctetString *>(item))->ToString();
+							break;
+						default:
+						{
+							invalidCode = true;
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d \n", lLogText.c_str(), it->first)); // TBC-Anshul 26-12-18
+							break;
+						}
+						}
+						if (invalidCode == false)
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Value:%s\n", lLogText.c_str(), it->first, avpValue.c_str()));
+							codeMap.insert(make_pair(it->first, avpValue));
+						}
+					}
+				}
+				lList.clear();
+			}
+			else if (msg.hdr.mApplId == AAA_S6a_APP_ID)
+			{
+				cout<<"ULR Handling in DRA"<<endl;
+				S6A::UpdateLocationRequest *lULRequest = reinterpret_cast<S6A::UpdateLocationRequest *>(msg.baseClass.get());
+				lInterfaceObj = lULRequest->FindAll(&msg.rawbyteArray, it->first, lList, true);
+				if (!lInterfaceObj)
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Not Found\n", lLogText.c_str(), it->first));
+				}
+				else
+				{
+					for (auto *item : lList)
+					{
+						switch (item->GetDataType())
+						{
+						case UNSIGNED32_TYPE:
+							avpValue = (reinterpret_cast<Unsigned32 *>(item))->ToString();
+							break;
+						case ENUMERATED_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER32_TYPE:
+							avpValue = (reinterpret_cast<Integer32 *>(item))->ToString();
+							break;
+						case INTEGER64_TYPE:
+							avpValue = (reinterpret_cast<Integer64 *>(item))->ToString();
+							break;
+						case UNSIGNED64_TYPE:
+							avpValue = (reinterpret_cast<Unsigned64 *>(item))->ToString();
+							break;
+						case OCTETSTRING_TYPE:
+							avpValue = (reinterpret_cast<OctetString *>(item))->ToString();
+							break;
+						default:
+						{
+							invalidCode = true;
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d \n", lLogText.c_str(), it->first)); // TBC-Anshul 26-12-18
+							break;
+						}
+						}
+						if (invalidCode == false)
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s AVP Code:%d Value:%s\n", lLogText.c_str(), it->first, avpValue.c_str()));
+							codeMap.insert(make_pair(it->first, avpValue));
+						}
+					}
+				}
+				lList.clear();
+			}
+			else
+			{
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Application-Id:%s Not Supported\n", lLogText.c_str(), msg.hdr.mApplId));
+				return false;
+			}
+		}
+		catch (TssDiameterMsgException d)
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Caught Exception on Finding Routing details, Err:%s Msg:%s\n",
+					 lLogText.c_str(), d.getErrorCode(), d.getErrMessage()));
+		}
+	}
+
+	return mRouting->getPeer(codeMap, dest, msg.sessionId);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccInitialRequestRtxReceived
+// DESCRIPTION : To Handle cc Requests. This is the entry point for all cc requests.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccInitialRequestRtxReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mSourcePeerEntry == nullptr && mDestPeerEntry == nullptr)
+	{
+		ccInitialRequestReceived(msg, source, dest);
+	}
+	else
+	{
+		ccUpdateRequestReceived(msg, source, dest);
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccInitialRequestReceived
+// DESCRIPTION : To Handle cc Initial Requests.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccInitialRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message, Type:AVP_BASED\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s CCR(I) Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+	this->StoreMsccUsu(msg);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccInitialAnswerReceived
+// DESCRIPTION : To Handle cc Initial Answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccInitialAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	try
+	{
+		this->EvrWriter(msg);
+
+		switch (msg->hdr.mApplId)
+		{
+		case AAA_Ro_APP_ID:
+		{
+			this->CheckCCAMsg(msg);
+		}
+		break;
+		default:
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s undefine Application Id\n", lLogText.c_str()));
+		}
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception Caught\n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccInitialAnswerReceived
+// DESCRIPTION : To Handle cc Update Requests.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccUpdateRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mDestPeerEntry != nullptr)
+	{
+		dest = mDestPeerEntry;
+	}
+
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (!mDestPeerEntry || (!mRouting->CheckPeerStatus(mDestPeerEntry)))
+	{
+		if (mDestPeerEntry)
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s CCR(U) Source:%s Destination:%s, Destination UNAVAILABLE, finding new route....\n",
+					 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for Update message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		mDestPeerEntry = dest;
+		mSourcePeerEntry = source;
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str())); // TBC-Anshul 26-12-18
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s CCR(U) Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+	this->StoreMsccUsu(msg);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : CheckCCAMsg
+// DESCRIPTION : To processes message by conditionally invoking specific handlers
+//				 based on configuration flags.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::CheckCCAMsg(DiameterMsg *msg)
+{
+	if (DRA_CONFIG_HDLR()->mMsccResultCodMapActiveFlag)
+	{
+		this->ReplaceResultCodeMSCC(msg);
+	}
+
+	if (DRA_CONFIG_HDLR()->mInputOutputOctetsActiveFlag)
+	{
+		this->CheckAndAddGUSOctets(msg);
+	}
+
+	if (DRA_CONFIG_HDLR()->mVolumeQuotaThresholdActiveFlag)
+	{
+		this->VolumeQuotaThreshold(msg);
+	}
+
+	if (DRA_CONFIG_HDLR()->mRelayDataOnErrToPcrfFlg)
+	{
+		this->RelayCCAToPcrf(msg);
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccUpdateAnswerReceived
+// DESCRIPTION : To Handle cc Update Answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccUpdateAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	try
+	{
+		this->EvrWriter(msg);
+
+		switch (msg->hdr.mApplId)
+		{
+		case AAA_Ro_APP_ID:
+		{
+			this->CheckCCAMsg(msg);
+		}
+		break;
+		default:
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s undefine Application Id\n", lLogText.c_str()));
+		}
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception Caught\n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ReplaceResultCodeMSCC
+// DESCRIPTION : To updates unsupported MSCC result codes in Diameter messages 
+//				 based on configurable mappings and conditions.
+// PARAMETER   : DiameterMsg
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ReplaceResultCodeMSCC(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	regex lRegex((DRA_CONFIG_HDLR()->mOrignHostRegulerExp));
+	string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+
+	if (regex_match(lOriginHost, lRegex))
+	{
+		if (DRA_CONFIG_HDLR()->mAndOrFlg)
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s AND_FLAG %d [UnitAction & TotalOctets] is 0 then change result code \n",
+					 lLogText.c_str(), DRA_CONFIG_HDLR()->mAndOrFlg));
+			try
+			{
+				auto lMSCC = reinterpret_cast<RO::CCAnswer *>(msg->baseClass.get())->getMultipleServicesCreditControlGrpList();
+				for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)
+				{
+					int lGSU = 0;
+					try
+					{
+						lGSU = (*it)->getGrantedServiceUnit()->getCCTotalOctets()->getValue();
+					}
+					catch (...)
+					{
+						lGSU = 0;
+					}
+
+					try
+					{
+						if ((*it)->getFinalUnitIndication()->getFinalUnitAction()->getValue() == 0 && lGSU == 0)
+						{
+							string lResultMSCC = to_string((*it)->getResultCode()->getValue());
+
+							auto resultReplaced = DRA_CONFIG_HDLR()->mResultCodeMSCCMap.find(lResultMSCC);
+							if (resultReplaced != DRA_CONFIG_HDLR()->mResultCodeMSCCMap.end())
+							{
+								(*it)->setResultCode()->setValue(resultReplaced->second);
+								AAA_LOG((LM_INFO, "%T |DRA_APP| %s UnSupported MSCC ResultCode replaced with ResultCode:%d\n",
+										 lLogText.c_str(), resultReplaced->second));
+							}
+							else
+							{
+								resultReplaced = DRA_CONFIG_HDLR()->mResultCodeMSCCMap.find("*");
+								if (resultReplaced != DRA_CONFIG_HDLR()->mResultCodeMSCCMap.end())
+								{
+									(*it)->setResultCode()->setValue(resultReplaced->second);
+									AAA_LOG((LM_INFO,
+											 "%T |DRA_APP| %s UnSupported MSCC ResultCode replaced with defaultCode:%d\n",
+											 lLogText.c_str(), resultReplaced->second));
+								}
+							}
+						}
+					}
+					catch (...)
+					{
+						AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught ,while Processing MSCC ResultCode\n", lLogText.c_str()));
+					}
+				}
+			}
+			catch (...)
+			{
+				AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught while Processing MSCC Result code\n", lLogText.c_str()));
+			}
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s AND_FLAG %d [UnitAction | TotalOctets] is 0 then change result code\n",
+					 lLogText.c_str(), DRA_CONFIG_HDLR()->mAndOrFlg));
+			try
+			{
+				auto lMSCC = reinterpret_cast<RO::CCAnswer *>(msg->baseClass.get())->getMultipleServicesCreditControlGrpList();
+				for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)
+				{
+					int lFUI = 3;
+					int lGSU = 0;
+					try
+					{
+						lFUI = (*it)->getFinalUnitIndication()->getFinalUnitAction()->getValue();
+					}
+					catch (...)
+					{
+						lFUI = 3;
+					}
+					try
+					{
+						lGSU = (*it)->getGrantedServiceUnit()->getCCTotalOctets()->getValue();
+					}
+					catch (...)
+					{
+						lGSU = 0;
+					}
+
+					try
+					{
+						if (lFUI == TERMINATE || lGSU == 0)
+						{
+							string lResultMSCC = to_string((*it)->getResultCode()->getValue());
+
+							auto resultReplaced = DRA_CONFIG_HDLR()->mResultCodeMSCCMap.find(lResultMSCC);
+							if (resultReplaced != DRA_CONFIG_HDLR()->mResultCodeMSCCMap.end())
+							{
+								(*it)->setResultCode()->setValue(resultReplaced->second);
+								AAA_LOG((LM_INFO, "%T |DRA_APP| %s UnSupported MSCC ResultCode replaced with ResultCode:%d\n",
+										 lLogText.c_str(), resultReplaced->second));
+							}
+							else
+							{
+								resultReplaced = DRA_CONFIG_HDLR()->mResultCodeMSCCMap.find("*");
+								if (resultReplaced != DRA_CONFIG_HDLR()->mResultCodeMSCCMap.end())
+								{
+									(*it)->setResultCode()->setValue(resultReplaced->second);
+									AAA_LOG((LM_INFO,
+											 "%T |DRA_APP| %s UnSupported MSCC ResultCode replaced with defaultCode\n",
+											 lLogText.c_str()));
+								}
+							}
+						}
+					}
+					catch (...)
+					{
+						// Log
+						AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception caught ,while Processing MSCC Result Code\n",
+								 lLogText.c_str()));
+					}
+				}
+			}
+			catch (...)
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception caught while Processing MSCC Result code\n", lLogText.c_str()));
+			}
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : CheckAndAddGUSOctets
+// DESCRIPTION : To ensures the presence of CCInputOctets and CCOutputOctets in 
+//				 Diameter messages, assigning default values if missing.
+// PARAMETER   : DiameterMsg
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::CheckAndAddGUSOctets(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		regex lRegex((DRA_CONFIG_HDLR()->mOrignHostGSURegulerExp));
+		string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+
+		if (regex_match(lOriginHost, lRegex))
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is MATCHED with configuration\n", lLogText.c_str()));
+
+			auto lMSCC = reinterpret_cast<RO::CCAnswer *>(msg->baseClass.get())->getMultipleServicesCreditControlGrpList();
+
+			for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)
+			{
+				try
+				{
+					auto lGsu = (*it)->getGrantedServiceUnit();
+
+					if (lGsu)
+					{
+						AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s GSU AVP Present in Message  %d \n", lLogText.c_str(), lGsu));
+						try
+						{
+							(*it)->getGrantedServiceUnit()->getCCInputOctets()->getValue();
+						}
+						catch (...)
+						{
+							(*it)->getGrantedServiceUnit()->setCCInputOctets()->setValue(DRA_CONFIG_HDLR()->mGSUccInputOctet);
+							AAA_LOG((LM_INFO, "%T |DRA_APP| %s CCInputOctets is not present, assigning %d \n",
+									 lLogText.c_str(), DRA_CONFIG_HDLR()->mGSUccInputOctet));
+						}
+
+						try
+						{
+							(*it)->getGrantedServiceUnit()->getCCOutputOctets()->getValue();
+						}
+						catch (...)
+						{
+							(*it)->getGrantedServiceUnit()->setCCOutputOctets()->setValue(DRA_CONFIG_HDLR()->mGSUccOutputOctet);
+							AAA_LOG((LM_INFO, "%T |DRA_APP| %s CCOutputOctets is not present, assigning %d \n",
+									 lLogText.c_str(), DRA_CONFIG_HDLR()->mGSUccOutputOctet));
+						}
+					}
+					else
+					{
+						AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s GSU AVP Present in Message \n", lLogText.c_str()));
+					}
+				}
+				catch (...)
+				{
+					AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught while processing GSU \n", lLogText.c_str()));
+				}
+			}
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught \n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : VolumeQuotaThreshold
+// DESCRIPTION : To assign VolumeQuotaThreshold to Diameter messages if 
+//				 CCTotalOctets exceeds a configured threshold.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::VolumeQuotaThreshold(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		regex lRegex((DRA_CONFIG_HDLR()->mOrignHostGSURegulerExp));
+		string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+
+		if (regex_match(lOriginHost, lRegex))
+		{
+			auto lMSCC = reinterpret_cast<RO::CCAnswer *>(msg->baseClass.get())->getMultipleServicesCreditControlGrpList();
+			for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)
+			{
+
+				int lGSU = 0;
+				try
+				{
+					lGSU = (*it)->getGrantedServiceUnit()->getCCTotalOctets()->getValue();
+				}
+				catch (...)
+				{
+					AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught,while processing CCTotalOctets \n", lLogText.c_str()));
+					return;
+				}
+
+				try
+				{
+					(*it)->getVolumeQuotaThreshold()->getValue();
+				}
+				catch (...)
+				{
+					if (lGSU > DRA_CONFIG_HDLR()->mCCTotalOctetsThreshold)
+					{
+						(*it)->setVolumeQuotaThreshold()->setValue((lGSU * DRA_CONFIG_HDLR()->mVolumeQuotaThresholdPercentage / 100));
+						AAA_LOG((LM_INFO, "%T |DRA_APP| %s VolumeQuotaThreshold is not Present new assign \n", lLogText.c_str()));
+					}
+					else
+					{
+						AAA_LOG((LM_INFO, "%T |DRA_APP| %s VolumeQuotaThreshold is not Present but CCTotalOctets is not crossing the Threshold Value \n", lLogText.c_str()));
+					}
+				}
+			}
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Origin Host is not Present \n", lLogText.c_str()));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught,while processing VolumeQuotaThreshold \n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccTerminateRequestReceived
+// DESCRIPTION : To Handle cc Terminate Requests. And to store the MSCC and USU
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccTerminateRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mDestPeerEntry != nullptr)
+	{
+		dest = mDestPeerEntry;
+	}
+
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (!mDestPeerEntry || (!mRouting->CheckPeerStatus(mDestPeerEntry)))
+	{
+		if (mDestPeerEntry)
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s CCR(T) Source:%s Destination:%s, Destination UNAVAILABLE, finding new route....\n",
+					 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for Terminate message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		mDestPeerEntry = dest;
+		mSourcePeerEntry = source;
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str())); /// TBC-Anshul 28-Dec
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s CCR(T) Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+	this->StoreMsccUsu(msg);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccTerminateAnswerReceived
+// DESCRIPTION : To Handle cc Terminate Answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccTerminateAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		this->EvrWriter(msg);
+
+		switch (msg->hdr.mApplId)
+		{
+		case AAA_Ro_APP_ID:
+		{
+			this->CheckCCAMsg(msg);
+		}
+		break;
+		default:
+		{
+		}
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception Caught\n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccEventRequestReceived
+// DESCRIPTION : To handles Diameter event requests by determining routing details, 
+//				 updating destination information, and processing retransmissions.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccEventRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mSourcePeerEntry == nullptr) // If its not null then its retransmitted message
+	{
+		std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+
+		mSourcePeerEntry = source;
+		mDestPeerEntry = dest;
+
+		try
+		{
+			if (dest->GetRealmName().size())
+				msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+			msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str())); /// TBC-Anshul 28-dec
+		}
+	}
+	else
+	{
+		mSourcePeerEntry = source;
+		ccUpdateRequestReceived(msg, source, dest);
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccEventAnswerReceived
+// DESCRIPTION : To handles Diameter event answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccEventAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccRARequestReceived
+// DESCRIPTION : To handles Diameter RA requests by determining routing details, 
+//				 updating destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccRARequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	dest = mSourcePeerEntry;
+
+	if (dest)
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s RAR Source:%s Route to Destination:%s\n", lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+		if (true != mRouting->CheckPeerStatus(dest))
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Destination Peer is UNAVAILABLE \n ", lLogText.c_str()));
+			if (DIAMETER_CFG_TRANSPORT()->ActiveDefPeerFlag)
+			{
+				mRouting->getActiveDefPeer(dest, msg->sessionId);
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Got Active Default peer %s \n ", lLogText.c_str(), dest->GetPeerName().c_str())); // TBC-Anshul 26-12-18
+			}
+			else
+			{
+				if (mDestPeerEntry->GetActionOnRoutNotFound())
+				{
+					this->FormAnswer(msg);
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending RAAnswer Message Back to Server \n ", lLogText.c_str()));
+				}
+				else
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s can't sent Message \n ", lLogText.c_str()));
+				}
+			}
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Destination Peer is Active\n", lLogText.c_str()));
+		}
+
+		try
+		{
+			msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+			msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s UL Exception cought while setting Destination identity\n", lLogText.c_str())); /// TBC-Anshul 28-dec
+		}
+	}
+	else
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Destination not present\n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccRAAnswerReceived
+// DESCRIPTION : To handles Diameter RA answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccRAAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccASRequestReceived
+// DESCRIPTION : Handles the processing of an ASR in the Diameter protocol.
+// 				 It determines the appropriate destination peer, performs routing
+//				 checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccASRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	dest = mSourcePeerEntry;
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (DRA_CONFIG_HDLR()->mRelayDataOnErrToPcrfFlg)
+	{
+		if (DRA_CONFIG_HDLR()->mRelayAsrToPcrfFlg)
+		{
+			this->RelayASRToPcrf(msg);
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s ASR Relay to pcrf Flag:%d Disabled\n", lLogText.c_str(), DRA_CONFIG_HDLR()->mRelayAsrToPcrfFlg));
+		}
+	}
+
+	regex lRegex((DRA_CONFIG_HDLR()->mOHAsrRelayCfg));
+	string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+	if (regex_match(lOriginHost, lRegex))
+	{
+		if (DRA_CONFIG_HDLR()->mDoNotRelay_asr)
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s ASR Not relaying to Dest\n", lLogText.c_str()));
+
+			if (DRA_CONFIG_HDLR()->mDrop_asr)
+			{
+				DIAMETER_CFG_RELOAD()->drop_asr = true;
+				msg->internalRspFlag = true;
+			}
+			else
+			{
+				DIAMETER_CFG_RELOAD()->ack_asr = true;
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending ACK for ASR FROM DRA\n", lLogText.c_str()));
+				this->FormASAnswer(msg);
+				dest = mDestPeerEntry;
+			}
+		}
+	}
+
+	if (dest)
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s ASR Source:%s Route to Destination:%s\n", lLogText.c_str(),
+				 source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+
+	if (true != mRouting->CheckPeerStatus(dest))
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Destination Peer is UNAVAILABLE \n ", lLogText.c_str()));
+
+		if (DIAMETER_CFG_TRANSPORT()->ActiveDefPeerFlag)
+		{
+			mRouting->getActiveDefPeer(dest, msg->sessionId);
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Got Active Default peer %s \n ", lLogText.c_str(),
+					 dest->GetPeerName().c_str()));
+		}
+		else
+		{
+			if (mDestPeerEntry->GetActionOnRoutNotFound())
+			{
+				this->FormAnswer(msg);
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending ASAnswer Message Back to Server \n ", lLogText.c_str()));
+			}
+			else
+			{
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s can't sent Message \n ", lLogText.c_str()));
+			}
+		}
+	}
+	else
+	{
+		AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s Destination peer is active\n", lLogText.c_str()));
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : FormASAnswer
+// DESCRIPTION : To constructs and sends an Abort Session Answer (ASA) in response 
+//				 to an Abort Session Request (ASR) in the Diameter protocol.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::FormASAnswer(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	try
+	{
+		BASE::AbortSessionRequest *lasr = static_cast<BASE::AbortSessionRequest *>(msg->baseClass.get());
+		shared_ptr<BASE::AbortSessionAnswer> lasa = make_shared<BASE::AbortSessionAnswer>();
+
+		lasa->setSessionId()->setValue((TEXT *)lasr->getSessionId()->getValue());
+		lasa->setOriginRealm()->setValue((TEXT *)lasr->getDestinationRealm()->getValue());
+
+		if (mDestPeerEntry)
+			lasa->setOriginHost()->setValue((TEXT *)mDestPeerEntry->GetRealmName().c_str());
+		else
+			lasa->setOriginHost()->setValue((TEXT *)mSourcePeerEntry->HostEntry().m_Identity.c_str());
+
+		lasa->setVersion(1);
+		lasa->setCmdFlag(1);
+		lasa->setCmdCode(lasr->getCmdCode());
+		lasa->setApplnId(lasr->getApplnId());
+
+		lasa->setHopByHopId(lasr->getHopByHopId());
+		lasa->setEndToEndId(lasr->getEndToEndId());
+		lasa->setRequestBit(0);
+		lasa->setResultCode()->setValue(AAA_SUCCESS);
+
+		msg->hdr.mCmdFlg.rBit = 0;
+		msg->hdr.mCmdFlg.eBit = 0;
+		msg->hdr.mCmdFlg.tBit = 0;
+
+		msg->baseClass = lasa;
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception Caugth While Sending ASAnswer \n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : FormAnswer
+// DESCRIPTION : To generates appropriate Diameter protocol answers based on
+//				 the command code and application ID of the received message.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::FormAnswer(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	UINT32 lCmdCode = msg->hdr.mCmdCode;
+	switch (lCmdCode)
+	{
+	case AAA_ASR_MSG:
+	{
+		try
+		{
+			BASE::AbortSessionRequest *lasr = static_cast<BASE::AbortSessionRequest *>(msg->baseClass.get());
+			shared_ptr<BASE::AbortSessionAnswer> lasa = make_shared<BASE::AbortSessionAnswer>();
+
+			lasa->setSessionId()->setValue((TEXT *)lasr->getSessionId()->getValue());
+			lasa->setOriginRealm()->setValue((TEXT *)lasr->getDestinationRealm()->getValue());
+			lasa->setOriginHost()->setValue((TEXT *)lasr->getDestinationHost()->getValue());
+			lasa->setVersion(1);
+			lasa->setCmdFlag(1);
+			lasa->setCmdCode(lasr->getCmdCode());
+			lasa->setApplnId(lasr->getApplnId());
+			lasa->setHopByHopId(lasr->getHopByHopId());
+			lasa->setEndToEndId(lasr->getEndToEndId());
+			lasa->setRequestBit(0);
+			lasa->setResultCode()->setValue(3002);
+
+			msg->hdr.mCmdFlg.rBit = 0;
+			msg->hdr.mCmdFlg.eBit = 0;
+			msg->hdr.mCmdFlg.tBit = 0;
+
+			msg->internalRspFlag = true;
+
+			msg->baseClass = lasa;
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception Caugth While Sending ASAnswer \n", lLogText.c_str()));
+		}
+	}
+	break;
+	case AAA_SNR_MSG:
+	{
+		try
+		{
+			SY::SNRequest *lsnr = static_cast<SY::SNRequest *>(msg->baseClass.get());
+			shared_ptr<SY::SNAnswer> lsna = make_shared<SY::SNAnswer>();
+
+			lsna->setSessionId()->setValue((TEXT *)lsnr->getSessionId()->getValue());
+			lsna->setOriginRealm()->setValue((TEXT *)lsnr->getDestinationRealm()->getValue());
+			lsna->setOriginHost()->setValue((TEXT *)lsnr->getDestinationHost()->getValue());
+			lsna->setVersion(1);
+			lsna->setCmdFlag(1);
+			lsna->setCmdCode(lsnr->getCmdCode());
+			lsna->setApplnId(lsnr->getApplnId());
+			lsna->setHopByHopId(lsnr->getHopByHopId());
+			lsna->setEndToEndId(lsnr->getEndToEndId());
+			lsna->setRequestBit(0);
+			lsna->setResultCode()->setValue(3002);
+
+			msg->hdr.mCmdFlg.rBit = 0;
+			msg->hdr.mCmdFlg.eBit = 0;
+			msg->hdr.mCmdFlg.tBit = 0;
+
+			msg->internalRspFlag = true;
+
+			msg->baseClass = lsna;
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception Caugth While Forming SNAnswer \n", lLogText.c_str()));
+		}
+	}
+	break;
+
+	case AAA_RAR_MSG:
+	{
+		switch (msg->hdr.mApplId)
+		{
+		case AAA_Gx_APP_ID:
+		{
+			try
+			{
+				// BASE::ReAuthRequest *lrar = static_cast<BASE::ReAuthRequest*>(msg->baseClass.get());
+				GX::RARequest *lrar = static_cast<GX::RARequest *>(msg->baseClass.get());
+				// shared_ptr<BASE::ReAuthRequest> lraa = make_shared<BASE::ReAuthRequest>();
+				shared_ptr<GX::RAAnswer> lraa = make_shared<GX::RAAnswer>();
+
+				lraa->setSessionId()->setValue((TEXT *)lrar->getSessionId()->getValue());
+				lraa->setOriginRealm()->setValue((TEXT *)lrar->getDestinationRealm()->getValue());
+				lraa->setOriginHost()->setValue((TEXT *)lrar->getDestinationHost()->getValue());
+				lraa->setVersion(1);
+				lraa->setCmdFlag(1);
+				lraa->setCmdCode(lrar->getCmdCode());
+				lraa->setApplnId(lrar->getApplnId());
+				lraa->setHopByHopId(lrar->getHopByHopId());
+				lraa->setEndToEndId(lrar->getEndToEndId());
+				lraa->setRequestBit(0);
+				lraa->setResultCode()->setValue(3002);
+
+				msg->hdr.mCmdFlg.rBit = 0;
+				msg->hdr.mCmdFlg.eBit = 0;
+				msg->hdr.mCmdFlg.tBit = 0;
+
+				msg->internalRspFlag = true;
+				msg->baseClass = lraa;
+			}
+			catch (...)
+			{
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception Caugth While Sending RAAnswer \n", lLogText.c_str()));
+			}
+		}
+		break;
+		case AAA_Ro_APP_ID:
+		{
+			try
+			{
+				// BASE::ReAuthRequest *lrar = static_cast<BASE::ReAuthRequest*>(msg->baseClass.get());
+				RO::RARequest *lrar = static_cast<RO::RARequest *>(msg->baseClass.get());
+				// shared_ptr<BASE::ReAuthRequest> lraa = make_shared<BASE::ReAuthRequest>();
+				shared_ptr<RO::RAAnswer> lraa = make_shared<RO::RAAnswer>();
+
+				lraa->setSessionId()->setValue((TEXT *)lrar->getSessionId()->getValue());
+				lraa->setOriginRealm()->setValue((TEXT *)lrar->getDestinationRealm()->getValue());
+				lraa->setOriginHost()->setValue((TEXT *)lrar->getDestinationHost()->getValue());
+				lraa->setVersion(1);
+				lraa->setCmdFlag(1);
+				lraa->setCmdCode(lrar->getCmdCode());
+				lraa->setApplnId(lrar->getApplnId());
+				lraa->setHopByHopId(lrar->getHopByHopId());
+				lraa->setEndToEndId(lrar->getEndToEndId());
+				lraa->setRequestBit(0);
+				lraa->setResultCode()->setValue(3002);
+
+				msg->hdr.mCmdFlg.rBit = 0;
+				msg->hdr.mCmdFlg.eBit = 0;
+				msg->hdr.mCmdFlg.tBit = 0;
+
+				msg->internalRspFlag = true;
+				msg->baseClass = lraa;
+			}
+			catch (...)
+			{
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Exception Caugth While Sending RAAnswer \n", lLogText.c_str()));
+			}
+		}
+		break;
+		default:
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s UNKNOWN COMMAND CODE RECEIVED:%d \n", lLogText.c_str(),
+					 msg->hdr.mApplId));
+		}
+		}
+	}
+	break;
+	default:
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s UNKNOWN COMMAND CODE RECEIVED:%d \n", lLogText.c_str(), lCmdCode));
+	}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccASAnswerReceived
+// DESCRIPTION : To handles Diameter AS answers.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccASAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SyncSourceDest
+// DESCRIPTION : Synchronizes the source and destination peer entries for Diameter messages.
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SyncSourceDest(DiameterPeerEntry *source, DiameterPeerEntry *dest)
+{
+	// Below swapping is not added  HV to avoid retranmissiion issue
+	//	mDestPeerEntry   = source;
+	//	mSourcePeerEntry = dest;
+
+	mDestPeerEntry = dest;
+	mSourcePeerEntry = source;
+}
+
+#pragma message("Rework on Pegs and its display, for Code Reusability, manageability and Performance");
+//-------------------------------------------------------------------------------
+// METHOD      : DisplayPegDetails
+// DESCRIPTION :
+// PARAMETER   : DiameterPeerEntry, int, unsigned long &
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::DisplayPegDetails(DiameterPeerEntry *peerEntry, int index, unsigned long &tps)
+{
+
+	unsigned long cummulatedReq = peerEntry->Peg()->m_cummulatedReq;
+	unsigned long cummulatedAns = peerEntry->Peg()->m_cummulatedAns;
+
+	if (false == gClearFlag)
+	{
+		// gettimeofday(&gTimeValue, NULL);
+		// gLocalTime = localtime(&(gTimeValue.tv_sec));
+
+		peerEntry->Peg()->CummulateCount();
+
+		if (peerEntry->Peg()->m_cummulatedReq >= cummulatedReq)
+			cummulatedReq = peerEntry->Peg()->m_cummulatedReq - cummulatedReq;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (peerEntry->Peg()->m_cummulatedAns >= cummulatedAns)
+			cummulatedAns = peerEntry->Peg()->m_cummulatedAns - cummulatedAns;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (cummulatedReq >= 0 && cummulatedAns >= 0)
+			tps += (2 * cummulatedReq + 2 * cummulatedAns);
+		else
+			tps = 0;
+	}
+	else
+	{
+		cummulatedReq = 0;
+		cummulatedAns = 0;
+		peerEntry->Peg()->m_cummulatedReq = 0;
+		peerEntry->Peg()->m_cummulatedAns = 0;
+		tps = 0;
+		gClearFlag = false;
+	}
+	fprintf(gLicPeg,
+			"%c> PEER_%02d [%s]  |%-3u|%-3u|%-3u|%-3u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6lu|\n",
+			'#',
+			index,
+			peerEntry->GetPeerStatus().c_str(),
+			peerEntry->Peg()->m_cer,
+			peerEntry->Peg()->m_cea_success,
+			peerEntry->Peg()->m_dwr,
+			peerEntry->Peg()->m_dwa_success,
+			peerEntry->Peg()->m_ccr_initial,
+			peerEntry->Peg()->m_cca_initial_success,
+			peerEntry->Peg()->m_cca_initial_fail,
+			peerEntry->Peg()->m_ccr_update,
+			peerEntry->Peg()->m_cca_update_success,
+			peerEntry->Peg()->m_cca_update_fail,
+			peerEntry->Peg()->m_ccr_terminate,
+			peerEntry->Peg()->m_cca_terminate_success,
+			peerEntry->Peg()->m_cca_terminate_fail,
+			peerEntry->Peg()->m_rar,
+			peerEntry->Peg()->m_raa_success,
+			peerEntry->Peg()->m_raa_fail,
+			peerEntry->Peg()->m_unexpected,
+			peerEntry->Peg()->m_error_bit,
+			peerEntry->Peg()->m_retx_bit,
+			(!peerEntry->IsClient()) ? cummulatedReq : cummulatedAns);
+
+	fflush(gLicPeg);
+}
+//-------------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION :
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::DisplayPegDetailsSy(DiameterPeerEntry *peerEntry, int index, unsigned long &tps)
+{
+
+	unsigned long cummulatedReq = peerEntry->Peg()->m_cummulatedReq;
+	unsigned long cummulatedAns = peerEntry->Peg()->m_cummulatedAns;
+
+	if (false == gClearFlag)
+	{
+		// gettimeofday(&gTimeValue, NULL);
+		// gLocalTime = localtime(&(gTimeValue.tv_sec));
+
+		peerEntry->Peg()->CummulateCount();
+
+		if (peerEntry->Peg()->m_cummulatedReq >= cummulatedReq)
+			cummulatedReq = peerEntry->Peg()->m_cummulatedReq - cummulatedReq;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (peerEntry->Peg()->m_cummulatedAns >= cummulatedAns)
+			cummulatedAns = peerEntry->Peg()->m_cummulatedAns - cummulatedAns;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (cummulatedReq >= 0 && cummulatedAns >= 0)
+			tps += (2 * cummulatedReq + 2 * cummulatedAns);
+		else
+			tps = 0;
+	}
+	else
+	{
+		cummulatedReq = 0;
+		cummulatedAns = 0;
+		peerEntry->Peg()->m_cummulatedReq = 0;
+		peerEntry->Peg()->m_cummulatedAns = 0;
+		tps = 0;
+		gClearFlag = false;
+	}
+	fprintf(gLicPegSy,
+			"%c> PEER_%02d [%s]  |%-3u|%-3u|%-3u|%-3u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6lu|\n",
+			'#',
+			index,
+			peerEntry->GetPeerStatus().c_str(),
+			peerEntry->Peg()->m_cer,
+			peerEntry->Peg()->m_cea_success,
+			peerEntry->Peg()->m_dwr,
+			peerEntry->Peg()->m_dwa_success,
+			peerEntry->Peg()->m_slr,
+			peerEntry->Peg()->m_sla_success,
+			peerEntry->Peg()->m_sla_fail,
+			peerEntry->Peg()->m_slr_interm,
+			peerEntry->Peg()->m_sla_interm_success,
+			peerEntry->Peg()->m_sla_interm_fail,
+			peerEntry->Peg()->m_snr,
+			peerEntry->Peg()->m_sna_success,
+			peerEntry->Peg()->m_sna_fail,
+			peerEntry->Peg()->m_str_sy,
+			peerEntry->Peg()->m_sta_success_sy,
+			peerEntry->Peg()->m_sta_fail_sy,
+			peerEntry->Peg()->m_rar,
+			peerEntry->Peg()->m_raa_success,
+			peerEntry->Peg()->m_raa_fail,
+			peerEntry->Peg()->m_unexpected,
+			peerEntry->Peg()->m_error_bit,
+			peerEntry->Peg()->m_retx_bit,
+			(!peerEntry->IsClient()) ? cummulatedReq : cummulatedAns);
+
+	fflush(gLicPegSy);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION :
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::DisplayPegDetailsRx(DiameterPeerEntry *peerEntry, int index, unsigned long &tps)
+{
+
+	unsigned long cummulatedReq = peerEntry->Peg()->m_cummulatedReq;
+	unsigned long cummulatedAns = peerEntry->Peg()->m_cummulatedAns;
+
+	if (false == gClearFlag)
+	{
+		peerEntry->Peg()->CummulateCount();
+
+		if (peerEntry->Peg()->m_cummulatedReq >= cummulatedReq)
+			cummulatedReq = peerEntry->Peg()->m_cummulatedReq - cummulatedReq;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (peerEntry->Peg()->m_cummulatedAns >= cummulatedAns)
+			cummulatedAns = peerEntry->Peg()->m_cummulatedAns - cummulatedAns;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (cummulatedReq >= 0 && cummulatedAns >= 0)
+			tps += (2 * cummulatedReq + 2 * cummulatedAns);
+		else
+			tps = 0;
+	}
+	else
+	{
+		cummulatedReq = 0;
+		cummulatedAns = 0;
+		peerEntry->Peg()->m_cummulatedReq = 0;
+		peerEntry->Peg()->m_cummulatedAns = 0;
+		tps = 0;
+		gClearFlag = false;
+	}
+	fprintf(gLicPegRx,
+			"%c> PEER_%02d [%s]  |%-3u|%-3u|%-3u|%-3u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6u|%-6u\n",
+			'#',
+			index,
+			peerEntry->GetPeerStatus().c_str(),
+			peerEntry->Peg()->m_cer,
+			peerEntry->Peg()->m_cea_success,
+			peerEntry->Peg()->m_dwr,
+			peerEntry->Peg()->m_dwa_success,
+			peerEntry->Peg()->m_aar,
+			peerEntry->Peg()->m_aaa_success,
+			peerEntry->Peg()->m_aaa_fail,
+			peerEntry->Peg()->m_asr,
+			peerEntry->Peg()->m_asa_success,
+			peerEntry->Peg()->m_asa_fail,
+			peerEntry->Peg()->m_str,
+			peerEntry->Peg()->m_sta_success,
+			peerEntry->Peg()->m_sta_fail,
+			peerEntry->Peg()->m_rar,
+			peerEntry->Peg()->m_raa_success,
+			peerEntry->Peg()->m_raa_fail,
+			peerEntry->Peg()->m_unexpected,
+			peerEntry->Peg()->m_error_bit,
+			peerEntry->Peg()->m_retx_bit,
+			(!peerEntry->IsClient()) ? cummulatedReq : cummulatedAns);
+
+	fflush(gLicPegRx);
+}
+//-------------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION :
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::GenerateFile()
+{
+	time_t lCurrentTime;
+	struct tm *lpTmStruct;
+
+	if (NULL != gLicPeg)
+	{
+		fclose(gLicPeg);
+		gLicPeg = NULL;
+	}
+
+	lCurrentTime = time(NULL);
+	lpTmStruct = localtime(&lCurrentTime);
+	snprintf(gLicPegFile, MAX_FILE_PATH + MAX_FILE_NAME, "%s/%02d%02d%02d_DraTraffic_GX.txt",
+			 gLicPegFilePath, lpTmStruct->tm_mday, lpTmStruct->tm_mon + 1, lpTmStruct->tm_year % 100);
+
+	gLicPeg = fopen(gLicPegFile, "a+");
+
+	if (NULL == gLicPeg)
+	{
+		char lLogText[300];
+		snprintf(lLogText, 300, "Unable to Open File:%s", gLicPegFile);
+		// TssLogGenerator::mLog->GenerateLog( 500, lLogText);
+		return;
+	}
+	fprintf(gLicPeg, "+----------------------------------------------------------------------+\n");
+	std::list<DiameterPeerEntry *> *lPeerList = DIAMETER_PEER_TABLE()->GetPeerList();
+	int i = 0;
+	for (std::list<DiameterPeerEntry *>::iterator it = lPeerList->begin(); it != lPeerList->end(); it++, i++)
+	{
+		fprintf(gLicPeg, "PEER_%d   :><:  %s [%s]\n", i, (*it)->GetPeerName().c_str(), (!(*it)->IsClient()) ? "CLIENT" : "SERVER");
+		(*it)->Peg()->ClearPeg();
+		gClearFlag = 1;
+	}
+
+	fprintf(gLicPeg, "+----------------------------------------------------------------------+\n");
+	fprintf(gLicPeg, "%6s #> %7s |%3s|%3s|%3s|%3s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%6s|%6s|%6s|%6s|%6s|%6s|%6s|\n",
+			"Time", "PeerName", "CER", "CEA", "DWR", "DWA", "CCR-IS", "CCA-IS", "CCA-IF", "CCR-US", "CCA-US", "CCA-UF", "CCR-TS", "CCA-TS", "CCA-TF", "RAR-S", "RAA-S", "RAA-F", "Unexp", "EBT-R", "TBT-R", "M/S");
+	fprintf(gLicPeg, "+----------------------------------------------------------------------+\n");
+
+	fprintf(gLicPeg, "\n");
+}
+//-----------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION :
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::GenerateFileRx()
+{
+	time_t lCurrentTime;
+	struct tm *lpTmStruct;
+
+	if (NULL != gLicPegRx)
+	{
+		fclose(gLicPegRx);
+		gLicPegRx = NULL;
+	}
+
+	lCurrentTime = time(NULL);
+	lpTmStruct = localtime(&lCurrentTime);
+	snprintf(gLicPegFile, MAX_FILE_PATH + MAX_FILE_NAME, "%s/%02d%02d%02d_DraTraffic_RX.txt",
+			 gLicPegFilePath, lpTmStruct->tm_mday, lpTmStruct->tm_mon + 1, lpTmStruct->tm_year % 100);
+
+	gLicPegRx = fopen(gLicPegFile, "a+");
+
+	if (NULL == gLicPegRx)
+	{
+		char lLogText[300];
+		snprintf(lLogText, 300, "Unable to Open File:%s", gLicPegFile);
+		// TssLogGenerator::mLog->GenerateLog( 500, lLogText);
+		return;
+	}
+	fprintf(gLicPegRx, "+----------------------------------------------------------------------+\n");
+	std::list<DiameterPeerEntry *> *lPeerList = DIAMETER_PEER_TABLE()->GetPeerList();
+	int i = 0;
+	for (std::list<DiameterPeerEntry *>::iterator it = lPeerList->begin(); it != lPeerList->end(); it++, i++)
+	{
+		fprintf(gLicPegRx, "PEER_%d   :><:  %s [%s]\n", i, (*it)->GetPeerName().c_str(), (!(*it)->IsClient()) ? "CLIENT" : "SERVER");
+		(*it)->Peg()->ClearPeg();
+		gClearFlag = 1;
+	}
+
+	fprintf(gLicPegRx, "+----------------------------------------------------------------------+\n");
+	fprintf(gLicPegRx, "%6s #> %7s |%3s|%3s|%3s|%3s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%6s|%6s|%6s|%6s|%6s|%6s|%6s|\n",
+			"Time", "PeerName", "CER", "CEA", "DWR", "DWA", "AAR", "AAA-S", "AAA-F", "ASR", "ASA-S", "ASA-F", "STR", "STA-S", "STA-F", "RAR", "RAA-S", "RAA-F", "Unexp", "EBT-R", "TBT-R", "M/S");
+	fprintf(gLicPegRx, "+----------------------------------------------------------------------+\n");
+
+	fprintf(gLicPegRx, "\n");
+}
+//-----------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION :
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::GenerateFileSy()
+{
+	time_t lCurrentTime;
+	struct tm *lpTmStruct;
+
+	if (NULL != gLicPegSy)
+	{
+		fclose(gLicPegSy);
+		gLicPegSy = NULL;
+	}
+
+	lCurrentTime = time(NULL);
+	lpTmStruct = localtime(&lCurrentTime);
+	snprintf(gLicPegFile, MAX_FILE_PATH + MAX_FILE_NAME, "%s/%02d%02d%02d_DraTraffic_SY.txt",
+			 gLicPegFilePath, lpTmStruct->tm_mday, lpTmStruct->tm_mon + 1, lpTmStruct->tm_year % 100);
+
+	gLicPegSy = fopen(gLicPegFile, "a+");
+
+	if (NULL == gLicPegSy)
+	{
+		char lLogText[300];
+		snprintf(lLogText, 300, "Unable to Open File:%s", gLicPegFile);
+		// TssLogGenerator::mLog->GenerateLog( 500, lLogText);
+		return;
+	}
+	fprintf(gLicPegSy, "+----------------------------------------------------------------------+\n");
+	std::list<DiameterPeerEntry *> *lPeerList = DIAMETER_PEER_TABLE()->GetPeerList();
+	int i = 0;
+	for (std::list<DiameterPeerEntry *>::iterator it = lPeerList->begin(); it != lPeerList->end(); it++, i++)
+	{
+		fprintf(gLicPegSy, "PEER_%d   :><:  %s [%s]\n", i, (*it)->GetPeerName().c_str(), (!(*it)->IsClient()) ? "CLIENT" : "SERVER");
+		(*it)->Peg()->ClearPeg();
+		gClearFlag = 1;
+	}
+
+	fprintf(gLicPegSy, "+----------------------------------------------------------------------+\n");
+	fprintf(gLicPegSy, "%6s #> %7s |%3s|%3s|%3s|%3s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%6s|%6s|%6s|%6s|%6s|%6s|%6s|\n",
+			"Time", "PeerName", "CER", "CEA", "DWR", "DWA", "SLR-I", "SLA-IS", "SLA-IF", "SLR-U", "SLA-US", "SLA-UF", "SNR", "SNA-S", "SNA-F", "STR", "STA-S", "STA-F", "RAR", "RAA-S", "RAA-F", "Unexp", "EBT-R", "TBT-R", "M/S");
+	fprintf(gLicPegSy, "+----------------------------------------------------------------------+\n");
+
+	fprintf(gLicPegSy, "\n");
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      :
+// DESCRIPTION : This SetAlarmForNextDay method is not used in the code, need to be removed
+// PARAMETER   :
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SetAlarmForNextDay()
+{
+	// time_t mktime(struct tm *tm);
+	#pragma message("This SetAlarmForNextDay method is not used in the code, need to be removed");
+	time_t lCurrentTime;
+	time_t lNextTime;
+	time_t lDiffTime;
+	struct tm *lpTmStruct;
+
+	lCurrentTime = time(NULL);
+	lpTmStruct = localtime(&lCurrentTime);
+	lpTmStruct->tm_hour = 23;
+	lpTmStruct->tm_min = 59;
+	lpTmStruct->tm_sec = 59;
+	lNextTime = mktime(lpTmStruct);
+	lDiffTime = lNextTime - lCurrentTime;
+	lDiffTime = lDiffTime + 5; // Add Five For Correction
+	alarm(lDiffTime);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : RelayCCAToPcrf
+// DESCRIPTION : This method relays failed Credit-Control-Answer (CCA) messages 
+//				 to the PCRF based on configuration and routing logic.
+// PARAMETER   : DiameterMsg
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::RelayCCAToPcrf(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	try
+	{
+		if (msg->baseClass->getResultCode()->getValue() == AAA_SUCCESS)
+		{
+			return;
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s ResultCode:%d Checking OH...\n", lLogText.c_str(), msg->baseClass->getResultCode()->getValue()));
+		}
+
+		regex lRegex((DRA_CONFIG_HDLR()->mOrignHostGSURegulerExp));
+		string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+
+		if (regex_match(lOriginHost, lRegex))
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is MATCHED with configuration\n", lLogText.c_str()));
+
+			string lListName = "";
+			if (!this->GetActivePeer(msg, lListName))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Failed to get Active Peer \n", lLogText.c_str()));
+				if (DRA_CONFIG_HDLR()->mNoOfPrcfNodes == 1)
+				{
+					lListName = DRA_CONFIG_HDLR()->mDefPcrfNode;
+				}
+			}
+
+			if (lListName.compare("") == 0)
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Failed to get Active Peer/Default node not configured \n", lLogText.c_str()));
+			}
+			else
+			{
+				std::shared_ptr<RO::CCAnswer> lCCASPtr = std::static_pointer_cast<RO::CCAnswer>(msg->baseClass);
+				std::shared_ptr<RO::CCAnswer> lCCAnswer = make_shared<RO::CCAnswer>();
+
+				lCCAnswer->mspByteArray = make_shared<byteArray>();
+				memcpy(lCCAnswer->mspByteArray.get(), lCCASPtr->mspByteArray.get(), sizeof(byteArray));
+
+				lCCAnswer->setDiameterMsgHeader(1, lCCASPtr->getCmdFlag(), lCCASPtr->getCmdCode(), lCCASPtr->getApplnId(),
+												lCCASPtr->getHopByHopId(), lCCASPtr->getEndToEndId());
+				lCCAnswer->setSessionId()->setValue((TEXT *)lCCASPtr->getSessionId()->getValue());
+
+				if (-1 == DRA_PCRF_RELAY()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lCCAnswer), lListName))
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Send Failed Sending Again to PCRF\n", lLogText.c_str()));
+					if (-1 == DRA_PCRF_RELAY()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lCCAnswer), lListName))
+					{
+						AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending Again PCRF\n", lLogText.c_str()));
+					}
+				}
+			}
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is NOT MATCHED with configuration\n", lLogText.c_str()));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Exception caught \n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : RelayASRToPcrf
+// DESCRIPTION : Message relay to pcrf redis
+// PARAMETER   : DiameterMsg
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::RelayASRToPcrf(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	try
+	{
+		regex lRegex((DRA_CONFIG_HDLR()->mOrignHostGSURegulerExp));
+		string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+		if (regex_match(lOriginHost, lRegex))
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is MATCHED with configuration\n", lLogText.c_str()));
+
+			string lListName = "";
+			if (!this->GetActivePeer(msg, lListName))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Failed to get Active Peer\n", lLogText.c_str()));
+				if (DRA_CONFIG_HDLR()->mNoOfPrcfNodes == 1)
+				{
+					lListName = DRA_CONFIG_HDLR()->mDefPcrfNode;
+				}
+			}
+
+			if (lListName.compare("") == 0)
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Failed to get Active Peer/Default node not configured \n", lLogText.c_str()));
+			}
+			else
+			{
+				std::shared_ptr<BASE::AbortSessionRequest> lASRPtr = std::static_pointer_cast<BASE::AbortSessionRequest>(msg->baseClass);
+				std::shared_ptr<BASE::AbortSessionRequest> lASReq = make_shared<BASE::AbortSessionRequest>();
+
+				lASReq->setDiameterMsgHeader(1, lASRPtr->getCmdFlag(), lASRPtr->getCmdCode(), lASRPtr->getApplnId(),
+											 lASRPtr->getHopByHopId(), lASRPtr->getEndToEndId());
+				lASReq->setCmdCode(lASRPtr->getCmdCode()); // TBC
+				lASReq->setSessionId()->setValue((TEXT *)lASRPtr->getSessionId()->getValue());
+
+				if (-1 == DRA_PCRF_RELAY()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lASReq), lListName))
+				{
+					AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Send Failed Sending Again to PCRF\n", lLogText.c_str()));
+					if (-1 == DRA_PCRF_RELAY()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lASReq), lListName))
+					{
+						AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending Again PCRF\n", lLogText.c_str()));
+					}
+				}
+			}
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is NOT MATCHED with configuration\n", lLogText.c_str()));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception caught \n", lLogText.c_str()));
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : GetActivePeer
+// DESCRIPTION : To retrieves the active peer for a Diameter session by checking
+//				 local and external session data, ensuring peer availability 
+//				 and alias mapping.
+// PARAMETER   : DiameterMsg, string &
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+bool Dra::GetActivePeer(DiameterMsg *msg, string &lListName)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	AAA_JobData *data = NULL;
+
+	string key = to_string(AAA_Gx_APP_ID) + string(";") + msg->sessionId;
+	bool ret = DIAMETER_NEW_SESSION_DB().Lookup(key, (void **)&data);
+
+	if (ret)
+	{
+		try
+		{
+			Dra *session = reinterpret_cast<Dra *>(data);
+
+			if (!session->mDestPeerEntry || !session->mRouting->CheckPeerStatus(session->mDestPeerEntry))
+			{
+				if (session->mDestPeerEntry)
+				{
+					AAA_LOG((LM_ERROR, "%T |DRA_APP| %s DH:%s, Dest UNAVAILABLE....\n",
+							 lLogText.c_str(), session->mDestPeerEntry->GetPeerName().c_str()));
+				}
+				return false;
+			}
+
+			std::string lPeerName = session->mDestPeerEntry->GetPeerName();
+			if (!mRouting->getAlias(lPeerName, lListName))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Gx Session Info FOUND. Peer Alias is not FOUND in Map\n", lLogText.c_str()));
+				lListName = lPeerName;
+			}
+			return true;
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception While checking Activepcrf peer\n", lLogText.c_str()));
+			return false;
+		}
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Gx Session not present. Checking in redis..!\n", lLogText.c_str()));
+
+		try
+		{
+			SyncDccaProxySessionData syncData;
+			memset(&syncData, 0, sizeof(SyncDccaProxySessionData));
+
+			strcpy(syncData.sessionId, msg->sessionId.c_str());
+			syncData.appId = AAA_Gx_APP_ID;
+
+			if (GetSyncSessionData(syncData))
+			{
+				std::string lPeerName = syncData.destName;
+
+				if (lPeerName.size())
+				{
+					DiameterPeerEntry *peer = NULL;
+
+					peer = DIAMETER_PEER_TABLE()->Lookup(lPeerName);
+					if (peer)
+					{
+						if (peer->IsOpen())
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| PEER:%s STATUS:AVAILABLE SID:%s\n", lPeerName.c_str(), msg->sessionId.c_str()));
+						}
+						else
+						{
+							AAA_LOG((LM_DEBUG, "%T |DRA_APP| PEER:%s STATUS:UNAVAILABLE SID:%s\n", lPeerName.c_str(), msg->sessionId.c_str()));
+							return false;
+						}
+					}
+				}
+				else
+					return false;
+
+				if (!mRouting->getAlias(lPeerName, lListName))
+				{
+					AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Gx Session Info FOUND. Peer Alias is not FOUND in Map\n", lLogText.c_str()));
+					lListName = lPeerName;
+				}
+				return true;
+			}
+			else
+			{
+				AAA_LOG((LM_INFO, "%T |DRA_APP| %s Gx Session lookup failed.\n", lLogText.c_str()));
+				return false;
+			}
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception While checking Activepcrf peer\n", lLogText.c_str()));
+			return false;
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : EvrWriter
+// DESCRIPTION : processes and writes Event Records (EVRs) for Diameter messages 
+//				 based on application ID and configuration.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::EvrWriter(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	switch (msg->hdr.mApplId)
+	{
+	case AAA_Ro_APP_ID:
+	{
+		string lApplId = to_string(msg->hdr.mApplId);
+		int lRet = DIAMETER_CFG_EVR_INFO()->IsPresent(lApplId);
+
+		if (lRet != 0)
+		{
+			regex lRegex(DRA_CONFIG_HDLR()->mOHForMsccEvr);
+			string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+			if (!regex_match(lOriginHost, lRegex))
+			{
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is not matched for Mscc EVR\n", lLogText.c_str()));
+				return;
+			}
+
+			std::shared_ptr<RO::CCAnswer> lCCASPtr = std::static_pointer_cast<RO::CCAnswer>(msg->baseClass);
+			MSCC_DECODE();
+
+			if (lRet == 1 || (lRet == 2 && (msg->baseClass->getCCRequestType()->getValue() == 3)))
+			{
+				std::shared_ptr<RO::CCAnswer> lCCAnswer = make_shared<RO::CCAnswer>();
+
+				lCCAnswer->mspByteArray = make_shared<byteArray>();
+				memcpy(lCCAnswer->mspByteArray.get(), lCCASPtr->mspByteArray.get(), sizeof(byteArray));
+
+				lCCAnswer->setDiameterMsgHeader(1, lCCASPtr->getCmdFlag(), lCCASPtr->getCmdCode(),
+												lCCASPtr->getApplnId(), lCCASPtr->getHopByHopId(), lCCASPtr->getEndToEndId());
+
+				lCCAnswer->setSessionId()->setValue((TEXT *)lCCASPtr->getSessionId()->getValue());
+
+				AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Writing Evr into Queue\n", lLogText.c_str()));
+				// enqueue
+				DRA_DETAILED_EVR_WRITER()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lCCAnswer), mMsccInfo);
+			}
+		}
+	}
+	break;
+	default:
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Application not Supported to write Evrs\n", lLogText.c_str()));
+	}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : StoreMsccUsu
+// DESCRIPTION : To processes and stores MSCC and USU data from Diameter messages 
+//				 for tracking usage metrics.
+// PARAMETER   : DiameterMsg
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::StoreMsccUsu(DiameterMsg *msg)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	switch (msg->hdr.mApplId)
+	{
+	case AAA_Ro_APP_ID:
+	{
+		string lApplId = to_string(msg->hdr.mApplId);
+		int lRet = DIAMETER_CFG_EVR_INFO()->IsPresent(lApplId);
+
+		if (lRet == 0)
+		{
+			return;
+		}
+
+		regex lRegex(DRA_CONFIG_HDLR()->mOHForMsccEvr);
+		string lOriginHost = msg->baseClass->getOriginHost()->ToString();
+		if (!regex_match(lOriginHost, lRegex))
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Origin Host is not matched for Mscc EVR\n", lLogText.c_str()));
+			return;
+		}
+
+		try
+		{
+			auto lMSCC = reinterpret_cast<RO::CCRequest *>(msg->baseClass.get())->getMultipleServicesCreditControlGrpList();
+			for (auto it = lMSCC->begin(); it != lMSCC->end(); ++it)
+			{
+				MsccInfo lMsccInfo;
+				int lRG = 0;
+				try
+				{
+					lRG = (*it)->getRatingGroup()->getValue();
+				}
+				catch (...)
+				{
+					lRG = 0;
+				}
+
+				try
+				{
+					auto lUsu = (*it)->getUsedServiceUnitGrpList();
+					if (lUsu->begin() != (*it)->getUsedServiceUnitGrpList()->end())
+					{
+						lMsccInfo.mUsuCurrent = (*lUsu->begin())->getCCTotalOctets()->getValue();
+					}
+				}
+				catch (...)
+				{
+					lMsccInfo.mUsuCurrent = 0;
+				}
+
+				auto lMsccInfoIt = mMsccInfo.find(lRG);
+				if (lMsccInfoIt != mMsccInfo.end())
+				{
+					lMsccInfoIt->second.mUsuTotal = lMsccInfoIt->second.mUsuTotal + lMsccInfo.mUsuCurrent;
+					lMsccInfoIt->second.mUsuCurrent = lMsccInfo.mUsuCurrent;
+				}
+				else
+				{
+					lMsccInfo.mUsuTotal = lMsccInfo.mUsuCurrent;
+					mMsccInfo[lRG] = lMsccInfo;
+				}
+			}
+		}
+		catch (...)
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| Exception while decoding Mscc to store Usu\n"));
+		}
+	}
+	break;
+	case AAA_Gx_APP_ID:
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| Application not support evr\n"));
+	}
+	break;
+	default:
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| Application not support evr\n"));
+	}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccTccTimeExpired
+// DESCRIPTION : To  handles session expiration by generating and sending a 
+//				 Credit-Control-Answer (CCA) with event records if applicable.
+// PARAMETER   : string &, int
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccTccTimeExpired(string &lSessionId, int lApplId)
+{
+	switch (lApplId)
+	{
+	case AAA_Ro_APP_ID:
+	{
+		string lApplIdstr = to_string(lApplId);
+		int lRet = DIAMETER_CFG_EVR_INFO()->IsPresent(lApplIdstr);
+
+		if (lRet != 0)
+		{
+			std::shared_ptr<RO::CCAnswer> lCCAnswer = make_shared<RO::CCAnswer>();
+			lCCAnswer->setDiameterMsgHeader(1, 0, 272, lApplId, 0, 0);
+			lCCAnswer->setSessionId()->setValue((TEXT *)lSessionId.c_str());
+			DRA_DETAILED_EVR_WRITER()->SendReq(std::dynamic_pointer_cast<DiameterBase>(lCCAnswer), mMsccInfo, true);
+		}
+	}
+	break;
+	default:
+	{
+		AAA_LOG((LM_DEBUG, "%T |DRA_APP| Application not support to Evr SID:%s\n", lSessionId.c_str()));
+	}
+	}
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccAARequestReceived
+// DESCRIPTION : To handles the processing of an AAR in the Diameter protocol. It determines
+//				 the appropriate destination peer, performs routing checks, and updates
+//				 the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccAARequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message, Type:AVP_BASED\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s AAR Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccAAAnswerReceived
+// DESCRIPTION : Handles the processing of an AAA in the Diameter protocol.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccAAAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| ccAAAnswerReceived \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : ccSTRequestReceived
+// DESCRIPTION : This method handles the processing of a STR received in the Diameter protocol.
+//				 It determines the appropriate destination peer for the message, performs routing
+//				 checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccSTRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mDestPeerEntry != nullptr)
+	{
+		dest = mDestPeerEntry;
+	}
+
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (!mDestPeerEntry || (!mRouting->CheckPeerStatus(mDestPeerEntry)))
+	{
+		if (mDestPeerEntry)
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s STR Source:%s Destination:%s, Destination UNAVAILABLE, finding new route....\n",
+					 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for Update message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			// ModifiedBy-- Nandagopi. Date:01/07/2021
+			//  Modified to form error response on Routing fails..
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				// ModifiedBy-- Nandagopi. Date:01/07/2021
+				//  Modified to form error response on Routing fails..
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		mDestPeerEntry = dest;
+		mSourcePeerEntry = source;
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s STR Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      :ccSTAnswerReceived
+// DESCRIPTION :This method handles STA answer
+// PARAMETER   :DiameterMsg, DiameterPeerEntry
+// RETURN      :void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::ccSTAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| ccSTAnswerReceived \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLRequestInitial
+// DESCRIPTION : This method handles the processing of a SLR received in the Diameter protocol.
+//               It determines the appropriate destination peer for the message, performs routing
+//               checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLRequestInitial(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message, Type:AVP_BASED\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s SLR Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLAnswerInitialSuccess
+// DESCRIPTION : This method handles SLA Initial answer
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLAnswerInitialSuccess(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| SLAnswerInitialSuccess( \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLAnswerInitialFailed
+// DESCRIPTION : This method handles unsuccessful Initial SLA.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLAnswerInitialFailed(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| SLAnswerInitialFailed( \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLRequestIntermediate
+// DESCRIPTION : This method handles the processing of a SLR update received in the Diameter protocol.
+//               It determines the appropriate destination peer for the message, performs routing
+//               checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLRequestIntermediate(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mDestPeerEntry != nullptr)
+	{
+		dest = mDestPeerEntry;
+	}
+
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (!mDestPeerEntry || (!mRouting->CheckPeerStatus(mDestPeerEntry)))
+	{
+		if (mDestPeerEntry)
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s SLR Intermediate Source:%s Destination:%s, Destination UNAVAILABLE, finding new route....\n",
+					 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for Update message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		mDestPeerEntry = dest;
+		mSourcePeerEntry = source;
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s SLR Intermediate Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLAnswerIntermediateSuccess
+// DESCRIPTION : This method handles Intermediate Success SLA 
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLAnswerIntermediateSuccess(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| SLAnswerIntermediateSuccess \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SLAnswerIntermediateFailed
+// DESCRIPTION : This method handles SLA intermediate Failed answer
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SLAnswerIntermediateFailed(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| SLAnswerIntermediateFailed\n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : SNRequestReceived
+// DESCRIPTION : This method handles the processing of a SNR received in the Diameter protocol.
+//               It determines the appropriate destination peer for the message, performs routing
+//               checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      :void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SNRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+   std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+   dest = mSourcePeerEntry;
+
+   if (dest)
+   {
+      AAA_LOG((LM_INFO, "%T |DRA_APP| %s SNR Source:%s Route to Destination:%s\n", lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+      if (true != mRouting->CheckPeerStatus(dest))
+      {
+         AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Destination Peer is UNAVAILABLE \n ", lLogText.c_str()));
+         if (DIAMETER_CFG_TRANSPORT()->ActiveDefPeerFlag)
+         {
+            mRouting->getActiveDefPeer(dest, msg->sessionId);
+            AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Got Active Default peer %s \n ", lLogText.c_str(), dest->GetPeerName().c_str())); // TBC-Anshul 26-12-18
+         }
+         else
+         {
+            if (mDestPeerEntry->GetActionOnRoutNotFound())
+            {
+               this->FormAnswer(msg);
+               AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Sending SNR Message Back to Server \n ", lLogText.c_str()));
+            }
+            else
+            {
+               AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s can't sent Message \n ", lLogText.c_str()));
+            }
+         }
+      }
+      else
+      {
+         AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s Destination Peer is Active\n", lLogText.c_str()));
+      }
+
+      try
+      {
+         msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+         msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+      }
+      catch (...)
+      {
+         AAA_LOG((LM_ERROR, "%T |DRA_APP| %s UL Exception cought while setting Destination identity\n", lLogText.c_str())); /// TBC-Anshul 28-dec
+      }
+   }
+   else
+   {
+      AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Destination not present\n", lLogText.c_str()));
+   }
+}
+/*{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message, Type:AVP_BASED\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+		AAA_LOG((LM_INFO, "%T |DRA_APP| Updated DH:%s, DR:%s\n", msg->baseClass->getDestinationHost()->ToString().c_str(), msg->baseClass->getDestinationRealm()->ToString().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s UL Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+}*/
+
+//-------------------------------------------------------------------------------
+// METHOD      : SNAnswerReceived
+// DESCRIPTION : This method handles SNA.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::SNAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	// AAA_LOG((LM_INFO, "%T |DRA_APP| SNAnswerReceived \n"));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : STRequestReceived
+// DESCRIPTION : To handles the processing of a STR received in the Diameter protocol.
+//				 It determines the appropriate destination peer for the message, performs routing
+//				 checks, and updates the message's destination information.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::STRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	if (mDestPeerEntry != nullptr)
+	{
+		dest = mDestPeerEntry;
+	}
+
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (!mDestPeerEntry || (!mRouting->CheckPeerStatus(mDestPeerEntry)))
+	{
+		if (mDestPeerEntry)
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s STR Source:%s Destination:%s, Destination UNAVAILABLE, finding new route....\n",
+					 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for Update message, Type:AVP_BASED\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s Routing Configured for the message\n", lLogText.c_str()));
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s No Active peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		mDestPeerEntry = dest;
+		mSourcePeerEntry = source;
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s Exception cought while setting Destination identity\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s STR Source:%s Route to Destination:%s\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : STAnswerReceived
+// DESCRIPTION : To handles the processing of a STA received in the Diameter protocol.
+// PARAMETER   : DiameterMsg, DiameterPeerEntry
+// RETURN      : void
+// THROWS      :
+//-------------------------------------------------------------------------------
+void Dra::STAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest) {}
+
+
+
+
+
+
+void Dra::ULRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a ULR: AVP-based routing\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a ULR: No active HSS peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a ULR: Session-based routing\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a ULR: All HSS peers unavailable\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a ULR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a ULR: MME[%s] → HSS[%s]\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+void Dra::ULAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a ULA: SUCCESS - Location updated\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a ULA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a ULA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a ULA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a ULA: Exception processing answer\n", lLogText.c_str()));
+	}
+
+}
+
+
+
+
+//-------------------------------------------------------------------------------
+// METHOD      : DisplayPegDetailsS6a
+// DESCRIPTION : Display S6a protocol performance counters and traffic statistics
+// PARAMETER   : DiameterPeerEntry *peerEntry, int index, unsigned long &tps
+// RETURN      : void
+// THROWS      : None
+//-------------------------------------------------------------------------------
+void Dra::DisplayPegDetailsS6a(DiameterPeerEntry *peerEntry, int index, unsigned long &tps)
+{
+	unsigned long cummulatedReq = peerEntry->Peg()->m_cummulatedReq;
+	unsigned long cummulatedAns = peerEntry->Peg()->m_cummulatedAns;
+
+	if (false == gClearFlag)
+	{
+		peerEntry->Peg()->CummulateCount();
+
+		if (peerEntry->Peg()->m_cummulatedReq >= cummulatedReq)
+			cummulatedReq = peerEntry->Peg()->m_cummulatedReq - cummulatedReq;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (peerEntry->Peg()->m_cummulatedAns >= cummulatedAns)
+			cummulatedAns = peerEntry->Peg()->m_cummulatedAns - cummulatedAns;
+		else
+			peerEntry->Peg()->m_cummulatedReq = 0;
+
+		if (cummulatedReq >= 0 && cummulatedAns >= 0)
+			tps += (2 * cummulatedReq + 2 * cummulatedAns);
+		else
+			tps = 0;
+	}
+	else
+	{
+		cummulatedReq = 0;
+		cummulatedAns = 0;
+		peerEntry->Peg()->m_cummulatedReq = 0;
+		peerEntry->Peg()->m_cummulatedAns = 0;
+		tps = 0;
+		gClearFlag = false;
+	}
+
+	// S6a message counters: ULR/ULA, AIR/AIA, PUR/PUA, CLR/CLA, IDR/IDA, DSR/DSA
+	fprintf(gLicPegS6a,
+			"%c> PEER_%02d [%s]  |%-3u|%-3u|%-3u|%-3u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-7u|%-6u|%-6u|%-6u|%-6u|\n",
+			'#',
+			index,
+			peerEntry->GetPeerStatus().c_str(),
+			peerEntry->Peg()->m_cer,           // CER
+			peerEntry->Peg()->m_cea_success,   // CEA
+			peerEntry->Peg()->m_dwr,           // DWR
+			peerEntry->Peg()->m_dwa_success,   // DWA
+			peerEntry->Peg()->m_ulr,           // ULR (Update Location Request)
+			peerEntry->Peg()->m_ula_success,   // ULA Success
+			peerEntry->Peg()->m_ula_fail,      // ULA Fail
+			peerEntry->Peg()->m_air,           // AIR (Auth Info Request)
+			peerEntry->Peg()->m_aia_success,   // AIA Success
+			peerEntry->Peg()->m_aia_fail,      // AIA Fail
+			peerEntry->Peg()->m_pur,           // PUR (Purge UE Request)
+			peerEntry->Peg()->m_pua_success,   // PUA Success
+			peerEntry->Peg()->m_pua_fail,      // PUA Fail
+			peerEntry->Peg()->m_clr,           // CLR (Cancel Location Request)
+			peerEntry->Peg()->m_cla_success,   // CLA Success
+			peerEntry->Peg()->m_cla_fail,      // CLA Fail
+			peerEntry->Peg()->m_idr,           // IDR (Insert Subscriber Data Request)
+			peerEntry->Peg()->m_ida_success,   // IDA Success
+			peerEntry->Peg()->m_ida_fail,      // IDA Fail
+			peerEntry->Peg()->m_unexpected,    // Unexpected messages
+			peerEntry->Peg()->m_error_bit,     // Error bit set
+			peerEntry->Peg()->m_retx_bit,      // Retransmit bit set
+			(!peerEntry->IsClient()) ? cummulatedReq : cummulatedAns);  // MSG/SEC
+
+	fflush(gLicPegS6a);
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : GenerateFileS6a
+// DESCRIPTION : Create S6a traffic statistics file with headers
+// PARAMETER   : None
+// RETURN      : void
+// THROWS      : None
+//-------------------------------------------------------------------------------
+void Dra::GenerateFileS6a()
+{
+	time_t lCurrentTime;
+	struct tm *lpTmStruct;
+
+	// Close existing file if open
+	if (NULL != gLicPegS6a)
+	{
+		fclose(gLicPegS6a);
+		gLicPegS6a = NULL;
+	}
+
+	// Generate filename with current date: DDMMYY_DraTraffic_S6A.txt
+	lCurrentTime = time(NULL);
+	lpTmStruct = localtime(&lCurrentTime);
+	snprintf(gLicPegFile, MAX_FILE_PATH + MAX_FILE_NAME, "%s/%02d%02d%02d_DraTraffic_S6A.txt",
+			 gLicPegFilePath, lpTmStruct->tm_mday, lpTmStruct->tm_mon + 1, lpTmStruct->tm_year % 100);
+
+	// Open file in append mode
+	gLicPegS6a = fopen(gLicPegFile, "a+");
+
+	if (NULL == gLicPegS6a)
+	{
+		char lLogText[300];
+		snprintf(lLogText, 300, "Unable to Open File:%s", gLicPegFile);
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s\n", lLogText));
+		return;
+	}
+
+	// Print header with peer list
+	fprintf(gLicPegS6a, "+----------------------------------------------------------------------+\n");
+	std::list<DiameterPeerEntry *> *lPeerList = DIAMETER_PEER_TABLE()->GetPeerList();
+	int i = 0;
+	for (std::list<DiameterPeerEntry *>::iterator it = lPeerList->begin(); it != lPeerList->end(); it++, i++)
+	{
+		fprintf(gLicPegS6a, "PEER_%d   :><:  %s [%s]\n", i, (*it)->GetPeerName().c_str(),
+				(!(*it)->IsClient()) ? "CLIENT" : "SERVER");
+		(*it)->Peg()->ClearPeg();
+		gClearFlag = 1;
+	}
+
+	// Print column headers for S6a statistics
+	fprintf(gLicPegS6a, "+----------------------------------------------------------------------+\n");
+	fprintf(gLicPegS6a, "%6s #> %7s |%3s|%3s|%3s|%3s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%7s|%6s|%6s|%6s|%6s|\n",
+			"Time", "PeerName",
+			"CER", "CEA", "DWR", "DWA",           // Connection management
+			"ULR", "ULA-S", "ULA-F",              // Update Location
+			"AIR", "AIA-S", "AIA-F",              // Auth Info
+			"PUR", "PUA-S", "PUA-F",              // Purge UE
+			"CLR", "CLA-S", "CLA-F",              // Cancel Location
+			"IDR", "IDA-S", "IDA-F",              // Insert Data
+			"Unexp", "EBT-R", "TBT-R", "M/S");    // Errors & TPS
+	fprintf(gLicPegS6a, "+----------------------------------------------------------------------+\n");
+
+	fprintf(gLicPegS6a, "\n");
+}
+
+
+
+
+
+//-------------------------------------------------------------------------------
+// METHOD      : AIRequestReceived
+// DESCRIPTION : Handles S6a Authentication Information Request (AIR) from MME/SGSN
+//               to HSS. Performs DRA routing and forwards to appropriate HSS.
+//               Per 3GPP TS 29.272 Section 7.2.5
+// PARAMETER   : DiameterMsg *msg - AIR message
+//               DiameterPeerEntry *source - Originating MME/SGSN peer
+//               DiameterPeerEntry *&dest - Destination HSS peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::AIRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a AIR: AVP-based routing\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a AIR: No active HSS peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a AIR: Session-based routing\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a AIR: All HSS peers unavailable\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a AIR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a AIR: MME[%s] → HSS[%s]\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : AIAnswerReceived
+// DESCRIPTION : Handles S6a Authentication Information Answer (AIA) from HSS.
+//               Validates result code and logs authentication outcome.
+//               Per 3GPP TS 29.272 Section 7.2.6
+// PARAMETER   : DiameterMsg *msg - AIA message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::AIAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a AIA: SUCCESS - Authentication vectors provided\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a AIA: USER_UNKNOWN (5001) - IMSI not provisioned\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5004)  // DIAMETER_ERROR_ROAMING_NOT_ALLOWED
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a AIA: ROAMING_NOT_ALLOWED (5004)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a AIA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5421)  // DIAMETER_ERROR_RAT_NOT_ALLOWED
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a AIA: RAT_NOT_ALLOWED (5421)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a AIA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a AIA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+//-------------------------------------------------------------------------------
+// METHOD      : PURequestReceived
+// DESCRIPTION : Handles S6a Purge UE Request (PUR) from MME/SGSN to HSS.
+//               Sent when UE is purged from MME due to detach or timeout.
+//               Per 3GPP TS 29.272 Section 7.2.13
+// PARAMETER   : DiameterMsg *msg - PUR message
+//               DiameterPeerEntry *source - Originating MME/SGSN peer
+//               DiameterPeerEntry *&dest - Destination HSS peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::PURequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a PUR: AVP-based routing\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a PUR: No active HSS peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a PUR: Session-based routing\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a PUR: All HSS peers unavailable\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a PUR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a PUR: MME[%s] → HSS[%s]\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : PUAnswerReceived
+// DESCRIPTION : Handles S6a Purge UE Answer (PUA) from HSS.
+//               Validates result code and PUA-Flags.
+//               Per 3GPP TS 29.272 Section 7.2.14
+// PARAMETER   : DiameterMsg *msg - PUA message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::PUAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a PUA: SUCCESS - UE purged from HSS\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a PUA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a PUA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a PUA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a PUA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+//-------------------------------------------------------------------------------
+// METHOD      : CLRequestReceived
+// DESCRIPTION : Handles S6a Cancel Location Request (CLR) from HSS to MME/SGSN.
+//               HSS-initiated request to cancel UE location. Routes back to
+//               the MME that sent the original ULR.
+//               Per 3GPP TS 29.272 Section 7.2.7
+// PARAMETER   : DiameterMsg *msg - CLR message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::CLRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	
+	// Try reverse routing first (preferred for HSS-initiated messages)
+	if (mSourcePeerEntry != nullptr && mRouting->CheckPeerStatus(mSourcePeerEntry))
+	{
+		dest = mSourcePeerEntry;
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a CLR: Reverse routing to stored MME\n", lLogText.c_str()));
+	}
+	else
+	{
+		// Fallback to standard DRA routing if reverse routing unavailable
+		if (mSourcePeerEntry)
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a CLR: Stored peer unavailable, using fallback routing\n", lLogText.c_str()));
+		else
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a CLR: No stored peer, using fallback routing\n", lLogText.c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a CLR: AVP-based routing\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a CLR: No active MME peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a CLR: Session-based routing\n", lLogText.c_str()));
+
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a CLR: All MME peers unavailable\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a CLR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a CLR: HSS[%s] → MME[%s] (Cancel Location)\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : CLAnswerReceived
+// DESCRIPTION : Handles S6a Cancel Location Answer (CLA) from MME/SGSN.
+//               Validates cancellation acknowledgment.
+//               Per 3GPP TS 29.272 Section 7.2.8
+// PARAMETER   : DiameterMsg *msg - CLA message
+//               DiameterPeerEntry *source - MME peer
+//               DiameterPeerEntry *&dest - Destination HSS peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::CLAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a CLA: SUCCESS - Location cancelled\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a CLA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a CLA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a CLA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a CLA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+//-------------------------------------------------------------------------------
+// METHOD      : IDRequestReceived
+// DESCRIPTION : Handles S6a Insert Subscriber Data Request (IDR) from HSS to MME.
+//               HSS-initiated request to update subscriber data. Routes back to
+//               the MME that registered the subscriber.
+//               Per 3GPP TS 29.272 Section 7.2.9
+// PARAMETER   : DiameterMsg *msg - IDR message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::IDRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	
+	// Try reverse routing first (preferred for HSS-initiated messages)
+	if (mSourcePeerEntry != nullptr && mRouting->CheckPeerStatus(mSourcePeerEntry))
+	{
+		dest = mSourcePeerEntry;
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a IDR: Reverse routing to stored MME\n", lLogText.c_str()));
+	}
+	else
+	{
+		// Fallback to standard DRA routing if reverse routing unavailable
+		if (mSourcePeerEntry)
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a IDR: Stored peer unavailable, using fallback routing\n", lLogText.c_str()));
+		else
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a IDR: No stored peer, using fallback routing\n", lLogText.c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a IDR: AVP-based routing\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a IDR: No active MME peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a IDR: Session-based routing\n", lLogText.c_str()));
+
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a IDR: All MME peers unavailable\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a IDR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a IDR: HSS[%s] → MME[%s] (Insert Subscriber Data)\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : IDAnswerReceived
+// DESCRIPTION : Handles S6a Insert Subscriber Data Answer (IDA) from MME/SGSN.
+//               Validates subscriber data insertion acknowledgment.
+//               Per 3GPP TS 29.272 Section 7.2.10
+// PARAMETER   : DiameterMsg *msg - IDA message
+//               DiameterPeerEntry *source - MME peer
+//               DiameterPeerEntry *&dest - Destination HSS peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::IDAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a IDA: SUCCESS - Subscriber data inserted\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a IDA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a IDA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5428)  // DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a IDA: UNKNOWN_SERVING_NODE (5428)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a IDA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a IDA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+//-------------------------------------------------------------------------------
+// METHOD      : DSRequestReceived
+// DESCRIPTION : Handles S6a Delete Subscriber Data Request (DSR) from HSS to MME.
+//               HSS-initiated request to delete subscriber data. Routes back to
+//               the MME that has the subscriber registered.
+//               Per 3GPP TS 29.272 Section 7.2.11
+// PARAMETER   : DiameterMsg *msg - DSR message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::DSRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	
+	// Try reverse routing first (preferred for HSS-initiated messages)
+	if (mSourcePeerEntry != nullptr && mRouting->CheckPeerStatus(mSourcePeerEntry))
+	{
+		dest = mSourcePeerEntry;
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a DSR: Reverse routing to stored MME\n", lLogText.c_str()));
+	}
+	else
+	{
+		// Fallback to standard DRA routing if reverse routing unavailable
+		if (mSourcePeerEntry)
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a DSR: Stored peer unavailable, using fallback routing\n", lLogText.c_str()));
+		else
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a DSR: No stored peer, using fallback routing\n", lLogText.c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a DSR: AVP-based routing\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a DSR: No active MME peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a DSR: Session-based routing\n", lLogText.c_str()));
+
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a DSR: All MME peers unavailable\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a DSR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a DSR: HSS[%s] → MME[%s] (Delete Subscriber Data)\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+}
+
+//-------------------------------------------------------------------------------
+// METHOD      : DSAnswerReceived
+// DESCRIPTION : Handles S6a Delete Subscriber Data Answer (DSA) from MME/SGSN.
+//               Validates subscriber data deletion acknowledgment.
+//               Per 3GPP TS 29.272 Section 7.2.12
+// PARAMETER   : DiameterMsg *msg - DSA message
+//               DiameterPeerEntry *source - MME peer
+//               DiameterPeerEntry *&dest - Destination HSS peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::DSAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a DSA: SUCCESS - Subscriber data deleted\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a DSA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a DSA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a DSA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a DSA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+//-------------------------------------------------------------------------------
+// METHOD      : ResetRequestReceived
+// DESCRIPTION : Handles S6a Reset Request (RSR) from HSS to MME/SGSN.
+//               HSS-initiated request to reset UE context. Routes back to
+//               the MME that has the subscriber registered.
+//               Per 3GPP TS 29.272 Section 7.2.15
+// PARAMETER   : DiameterMsg *msg - RSR message
+//               DiameterPeerEntry *source - HSS peer
+//               DiameterPeerEntry *&dest - Destination MME peer (output)
+// RETURN      : void
+// THROWS      : None (exceptions caught internally)
+//-------------------------------------------------------------------------------
+void Dra::ResetRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+	
+	// Try reverse routing first (preferred for HSS-initiated messages)
+	if (mSourcePeerEntry != nullptr && mRouting->CheckPeerStatus(mSourcePeerEntry))
+	{
+		dest = mSourcePeerEntry;
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a RSR: Reverse routing to stored MME\n", lLogText.c_str()));
+	}
+	else
+	{
+		// Fallback to standard DRA routing if reverse routing unavailable
+		if (mSourcePeerEntry)
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a RSR: Stored peer unavailable, using fallback routing\n", lLogText.c_str()));
+		else
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a RSR: No stored peer, using fallback routing\n", lLogText.c_str()));
+
+		if (AVP_BASED == mRouting->getRoutingType())
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a RSR: AVP-based routing\n", lLogText.c_str()));
+
+			if (false == this->GetRoutingDetails(*msg, dest))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a RSR: No active MME peers\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+		else
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a RSR: Session-based routing\n", lLogText.c_str()));
+
+			if (!mRouting->getPeer(dest, msg->sessionId))
+			{
+				AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a RSR: All MME peers unavailable\n", lLogText.c_str()));
+				msg->internalRspFlag = true;
+				return;
+			}
+			dest->Dump();
+		}
+	}
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a RSR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a RSR: HSS[%s] → MME[%s] (Reset Request)\n",
+			 lLogText.c_str(), source->GetPeerName().c_str(), dest->GetPeerName().c_str()));
+}
+
+void Dra::ResetAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a RSA: SUCCESS - Reset acknowledged\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a RSA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a RSA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a RSA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+
+void Dra::NotifyRequestReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	if (AVP_BASED == mRouting->getRoutingType())
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a NOR: AVP-based routing\n", lLogText.c_str()));
+
+		if (false == this->GetRoutingDetails(*msg, dest))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a NOR: No active HSS peers\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+	else
+	{
+		AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a NOR: Session-based routing\n", lLogText.c_str()));
+
+		if (!mRouting->getPeer(dest, msg->sessionId))
+		{
+			AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a NOR: All HSS peers unavailable\n", lLogText.c_str()));
+			msg->internalRspFlag = true;
+			return;
+		}
+		dest->Dump();
+	}
+
+	mSourcePeerEntry = source;
+	mDestPeerEntry = dest;
+
+	try
+	{
+		msg->baseClass->setDestinationRealm()->setValue(const_cast<char *>(dest->GetRealmName().c_str()));
+		msg->baseClass->setDestinationHost()->setValue(const_cast<char *>(dest->GetPeerName().c_str()));
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a NOR: Exception setting Destination AVPs\n", lLogText.c_str()));
+	}
+
+	AAA_LOG((LM_CRITICAL, "%T |DRA_APP| %s S6a NOR: MME[%s] → HSS[%s] (Notification)\n",
+			 lLogText.c_str(), mSourcePeerEntry->GetPeerName().c_str(), mDestPeerEntry->GetPeerName().c_str()));
+}
+
+void Dra::NotifyAnswerReceived(DiameterMsg *msg, DiameterPeerEntry *source, DiameterPeerEntry *&dest)
+{
+	std::string lLogText = LOG_DIAMETER_AVPS(*msg);
+
+	try
+	{
+		UINT32 resultCode = msg->baseClass->getResultCode()->getValue();
+
+		if (resultCode == 2001)  // DIAMETER_SUCCESS
+		{
+			AAA_LOG((LM_INFO, "%T |DRA_APP| %s S6a NOA: SUCCESS - Notification acknowledged\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5001)  // DIAMETER_ERROR_USER_UNKNOWN
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a NOA: USER_UNKNOWN (5001)\n", lLogText.c_str()));
+		}
+		else if (resultCode == 5420)  // DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+		{
+			AAA_LOG((LM_WARNING, "%T |DRA_APP| %s S6a NOA: UNKNOWN_EPS_SUBSCRIPTION (5420)\n", lLogText.c_str()));
+		}
+		else
+		{
+			AAA_LOG((LM_DEBUG, "%T |DRA_APP| %s S6a NOA: Result-Code=%d\n", lLogText.c_str(), resultCode));
+		}
+	}
+	catch (...)
+	{
+		AAA_LOG((LM_ERROR, "%T |DRA_APP| %s S6a NOA: Exception processing answer\n", lLogText.c_str()));
+	}
+}
+

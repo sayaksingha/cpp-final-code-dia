@@ -1,0 +1,5 @@
+# @(#) $Id: header.top,v 1.1.4.1 2017/11/22 00:35:11 shijuc Exp $
+
+SHELL = /bin/sh
+
+all:

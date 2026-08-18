@@ -1,0 +1,88 @@
+#@(#) $Id: footer.top,v 1.1.4.1 2017/11/22 00:35:11 shijuc Exp $
+
+.PHONY: all clean cleanall depend format $(DIRS)
+
+# top-level rule, to compile everything.
+all: $(DIRS)   
+
+# top-level rule, to clean everything.
+clean: $(DIRS)
+
+# top-level rule, to clean everything.
+cleanall: $(DIRS)
+
+# top-level rule, to create dependencies.
+depend: $(DIRS)
+
+# top-level rule, to create dependencies.
+java: $(DIRS)
+
+preinstall:
+	if ! test -d $(ROOTDIR)/wmcaoam/WEB-INF/classes; then mkdirhier $(ROOTDIR)/wmcaoam/WEB-INF/classes; fi
+	cp -Rf $(TPDIR)/oreilly/*.class $(ROOTDIR)/wmcaoam/WEB-INF/classes
+	cp -f $(ROOTDIR)/webgui/common/xml/web.xml $(ROOTDIR)/wmcaoam/WEB-INF/
+	cp -f $(ROOTDIR)/webgui/common/conf/database.conf $(ROOTDIR)/wmcaoam/WEB-INF/classes/
+	if ! test -d $(ROOTDIR)/wmcaoam/WEB-INF/cgi/; then mkdirhier $(ROOTDIR)/wmcaoam/WEB-INF/cgi; fi
+	cp -Rf $(ROOTDIR)/webgui/alarm/obj/WMCA_*  $(ROOTDIR)/wmcaoam/WEB-INF/cgi
+	if ! test -d $(ROOTDIR)/wmcaoam/alarm; then mkdirhier $(ROOTDIR)/wmcaoam/alarm; fi
+	cp -Rf $(ROOTDIR)/webgui/alarm/jsp/*  $(ROOTDIR)/wmcaoam/alarm
+	if ! test -d $(ROOTDIR)/wmcaoam/common/includes; then mkdirhier $(ROOTDIR)/wmcaoam/common/includes; fi
+	cp -Rf $(ROOTDIR)/webgui/common/includes/* $(ROOTDIR)/wmcaoam/common/includes
+	if ! test -d $(ROOTDIR)/wmcaoam/config/arabic; then mkdirhier $(ROOTDIR)/wmcaoam/config/arabic; fi
+	cp -Rf $(TPDIR)/arabic_editor/* $(ROOTDIR)/wmcaoam/config/arabic
+	
+	if ! test -d $(ROOTDIR)/wmcaoam/config; then mkdirhier $(ROOTDIR)/wmcaoam/config; fi
+	cp -Rf $(ROOTDIR)/webgui/config/jsp/* $(ROOTDIR)/wmcaoam/config
+	
+	if ! test -d $(ROOTDIR)/wmcaoam/img ; then mkdirhier $(ROOTDIR)/wmcaoam/img; fi
+	cp -Rf $(ROOTDIR)/webgui/common/img/* $(ROOTDIR)/wmcaoam/img
+	if ! test -d $(ROOTDIR)/wmcaoam/html ; then mkdirhier $(ROOTDIR)/wmcaoam/html; fi
+	cp -Rf $(ROOTDIR)/webgui/common/html/* $(ROOTDIR)/wmcaoam/html
+	if ! test -d $(ROOTDIR)/wmcaoam/common/css; then mkdirhier $(ROOTDIR)/wmcaoam/common/css; fi
+	cp -Rf $(ROOTDIR)/webgui/common/css/* $(ROOTDIR)/wmcaoam/common/css
+	if ! test -d $(ROOTDIR)/wmcaoam/common/js;  then mkdirhier $(ROOTDIR)/wmcaoam/common/js; fi
+	cp -Rf $(ROOTDIR)/webgui/common/js/* $(ROOTDIR)/wmcaoam/common/js
+	if ! test -d $(ROOTDIR)/wmcaoam/welcome;  then mkdirhier $(ROOTDIR)/wmcaoam/welcome ; fi
+	cp -Rf $(ROOTDIR)/webgui/welcome/html/* $(ROOTDIR)/wmcaoam/welcome
+
+
+	if ! test -d $(ROOTDIR)/wmcaoam/provisioning;  then mkdirhier $(ROOTDIR)/wmcaoam/provisioning; fi
+	cp -Rf $(ROOTDIR)/webgui/provisioning/jsp/* $(ROOTDIR)/wmcaoam/provisioning
+
+	if ! test -d $(ROOTDIR)/wmcaoam/admin;  then mkdirhier $(ROOTDIR)/wmcaoam/admin; fi
+	cp -Rf $(ROOTDIR)/webgui/admin/jsp/* $(ROOTDIR)/wmcaoam/admin
+
+
+   
+# top-level rule, to format source code.
+format: $(DIRS)
+
+$(DIRS):
+ifeq ($(MAKECMDGOALS), depend)
+# Create dependencies
+	@$(MAKE) depend -C $@
+else
+ifeq ($(MAKECMDGOALS), clean)
+# Clean
+	@$(MAKE) clean -C $@
+else
+ifeq ($(MAKECMDGOALS), cleanall)
+# Clean all
+	@$(MAKE) cleanall -C $@
+else
+ifeq ($(MAKECMDGOALS), format)
+# Format source code
+	@$(MAKE) format -C $@
+else
+ifeq ($(MAKECMDGOALS), java)
+# make java
+	@$(MAKE) java -C $@
+else
+# Build all
+	@$(MAKE) all -C $@
+endif
+endif
+endif
+endif
+endif
+

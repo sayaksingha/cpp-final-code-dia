@@ -1,0 +1,376 @@
+//----------------------------------------------------------------------
+// NAME
+// diameter_cc_proxy_rx_fsm.cc
+//
+// COPYRIGHT
+// Tayana Software Solutions Pvt Ltd -- Copyright(C) 2007
+// All rights reserved. No part of this computer program
+// may be used or reproduced in any form by any
+// means without prior written permission of
+// Tayana Software Solutions Pvt Ltd
+//
+// DESCRIPTION
+//
+// Originated :                                     Date:
+//----------------------------------------------------------------------
+#include <ace/Singleton.h>
+#include <ace/Atomic_Op_T.h>
+#include "diameter_cc_proxy_session.h"
+#include "diameter_cc_proxy_rx_fsm.h"
+#include "diameter_cc_parser.h"
+#include "diameter_cc_application.h"
+#include "aaa_redis_pool.h"
+
+class DiameterS6aProxyAction : public AAA_Action<DiameterS6aProxyStateMachine>
+{
+	virtual void operator()(DiameterS6aProxyStateMachine &) = 0;
+
+protected:
+	DiameterS6aProxyAction() {}
+	~DiameterS6aProxyAction() {}
+};
+
+/// State table used by DiameterS6aProxyStateMachine.
+class DiameterS6aProxyStateTable_S : public AAA_StateTable<DiameterS6aProxyStateMachine>
+{
+	friend class ACE_Singleton<DiameterS6aProxyStateTable_S, ACE_Recursive_Thread_Mutex>;
+
+private:
+	class AcSNRequest : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s [ACT]Process SN Request\n", lLogText.c_str()));
+
+				CancelTccTimer(sm); // This cancels the TCC timer
+				sm.SNRequest(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a);
+				StartTccTimer(sm); // This starts the TCC timer
+			}
+		}
+	};
+
+	class AcSTRequest : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s STRequest Process\n", lLogText.c_str()));
+
+				CancelTccTimer(sm); // This cancels the TCC timer
+				sm.STRequest(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a);
+				StartTccTimer(sm); // This starts the TCC timer
+			}
+		}
+	};
+
+	class AcSLRequest : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+
+				CancelTccTimer(sm); // This cancels the TCC timer
+				DIAMETER_SESSION_INFO()->lock.lock();
+				if (DIAMETER_SESSION_INFO()->currrentSessions < DIAMETER_CFG_SESSION()->maxSessions)
+					DIAMETER_SESSION_INFO()->currrentSessions++;
+				DIAMETER_SESSION_INFO()->lock.unlock();
+
+				AAA_LOG((LM_CRITICAL, "%T |CC_S6a_FSM| %s SLR Received, Started TCC, Created Session,Session:(%u/%d)\n",
+						 lLogText.c_str(), unsigned(DIAMETER_SESSION_INFO()->currrentSessions),
+						 DIAMETER_CFG_SESSION()->maxSessions));
+
+				bool lReqType = reinterpret_cast<SY::SLRequest *>(sm.m_MsgS6a->baseClass.get())->getSLRequestType()->getValue();
+				sm.SLRequest(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a, lReqType);
+				StartTccTimer(sm); // This starts the TCC timer
+				sm.SendSyncSessionDataS6a(sm, SYNC_OP_ADD, DiameterS6aProxyEvent::EvSLRequest, false);
+			}
+		}
+	};
+
+	class AcSuccessfulASAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s [ACT]Received Successful SNAnswer\n", lLogText.c_str()));
+				sm.SNAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a);
+			}
+		}
+	};
+
+	class AcUnsuccessfulASAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s [ACT]Received Unsuccessful SNAnswer\n", lLogText.c_str()));
+				sm.SNAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a);
+			}
+		}
+	};
+
+	class AcTccExpired : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.sessionIdS6a.size() > 0)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				DIAMETER_SESSION_INFO()->lock.lock();
+				if (DIAMETER_SESSION_INFO()->currrentSessions > 0)
+					DIAMETER_SESSION_INFO()->currrentSessions--;
+				DIAMETER_SESSION_INFO()->lock.unlock();
+				AAA_LOG((LM_CRITICAL, "%T |CC_S6a_FSM| sessionId:%s appId:%d Freeing session on expiry ,Reset  Sessions:(%u/%d)\n",
+						 sm.sessionIdS6a.c_str(), sm.appIdS6a,
+						 unsigned(DIAMETER_SESSION_INFO()->currrentSessions),
+						 DIAMETER_CFG_SESSION()->maxSessions));
+
+				sm.SendSyncSessionDataS6a(sm, SYNC_OP_DEL, DiameterS6aProxyEvent::EvTccExpiredS6a, true);
+				sm.Reset(sm.sessionIdS6a, sm.appIdS6a);
+			}
+		}
+	};
+
+	class AcSuccessfulAAAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s Successful SLAnswer\n", lLogText.c_str()));
+				// sm.SLAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a); Not Required
+			}
+		}
+	};
+
+	class AcUnsuccessfulAAAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s Unsuccessful SLAnswer\n", lLogText.c_str()));
+				// sm.SLAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a); Not Required
+			}
+		}
+	};
+
+	class AcSuccessfulSTAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_CRITICAL, "%T |CC_S6a_FSM| %s Successful STAnswer \n", lLogText.c_str()));
+				// sm.STAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a); Not Required
+
+				DIAMETER_SESSION_INFO()->lock.lock();
+				if (DIAMETER_SESSION_INFO()->currrentSessions > 0)
+					DIAMETER_SESSION_INFO()->currrentSessions--;
+				DIAMETER_SESSION_INFO()->lock.unlock();
+				AAA_LOG((LM_CRITICAL, "%T |CC_S6a_FSM| sessionId:%s appId:%d Freeing session on STAnswer, Sessions:(%u/%d)\n",
+						 sm.sessionIdS6a.c_str(), sm.appIdS6a,
+						 unsigned(DIAMETER_SESSION_INFO()->currrentSessions),
+						 DIAMETER_CFG_SESSION()->maxSessions));
+
+				sm.SendSyncSessionDataS6a(sm, SYNC_OP_DEL, DiameterS6aProxyEvent::EvTccExpiredS6a, false);
+				sm.Reset(sm.sessionIdS6a, sm.appIdS6a);
+			}
+		}
+	};
+
+	class AcUnsuccessfulSTAnswer : public DiameterS6aProxyAction
+	{
+		void operator()(DiameterS6aProxyStateMachine &sm)
+		{
+			if (sm.m_MsgS6a)
+			{
+				CancelTccTimer(sm); // This cancels the TCC timer
+				std::string lLogText = LOG_DIAMETER_AVPS(*sm.m_MsgS6a);
+				AAA_LOG((LM_INFO, "%T |CC_S6a_FSM| %s Unsuccessful STAnswer \n", lLogText.c_str()));
+				// sm.STAnswer(sm.m_MsgS6a, sm.m_SrcS6a, *sm.m_DestS6a); Not Required
+				sm.Reset(sm.sessionIdS6a, sm.appIdS6a);
+			}
+		}
+	};
+
+	enum state
+	{
+		StIdle,
+		StOpen
+	};
+
+	AAA_State GetOpenState()
+	{
+		return (AAA_State)StOpen;
+	}
+
+	AcSLRequest acAARequest;
+	AcSuccessfulAAAnswer acSuccessfulAAAnswer;
+	AcUnsuccessfulAAAnswer acUnsuccessfulAAAnswer;
+
+	AcSNRequest acASRequest;
+	AcSuccessfulASAnswer acSuccessfulASAnswer;
+	AcUnsuccessfulASAnswer acUnsuccessfulASAnswer;
+
+	AcSTRequest acSTRequest;
+	AcSuccessfulSTAnswer acSuccessfulSTAnswer;
+	AcUnsuccessfulSTAnswer acUnsuccessfulSTAnswer;
+
+	AcTccExpired acTccExpired;
+
+	// Defined as a leaf class
+	DiameterS6aProxyStateTable_S()
+	{
+
+		AddStateTableEntry(StIdle,
+						   DiameterS6aProxyEvent::EvULRRequest,
+						   StOpen, acULRRequest);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvULRRequest,
+						   StOpen, acULRRequest);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSLAnswerSuccessful,
+						   StOpen, acSuccessfulAAAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSLAnswerUnsuccessful,
+						   StOpen, acUnsuccessfulAAAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSNRequest,
+						   StOpen, acASRequest);
+
+				/*AddStateTableEntry(StIdle,
+								   DiameterS6aProxyEvent::EvSNRequest,
+								   StOpen, acASRequest);*/
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSNAnswerSuccessful,
+						   StOpen, acSuccessfulASAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSNAnswerUnsuccessful,
+						   StOpen, acUnsuccessfulASAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSTRequestS6a,
+						   StOpen, acSTRequest);
+
+		AddStateTableEntry(StIdle,
+						   DiameterS6aProxyEvent::EvSTRequestS6a,
+						   StOpen, acSTRequest);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSTAnswerSuccessfulS6a,
+						   StIdle, acSuccessfulSTAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvSTAnswerUnsuccessfulS6a,
+						   StOpen, acUnsuccessfulSTAnswer);
+
+		AddStateTableEntry(StOpen,
+						   DiameterS6aProxyEvent::EvTccExpiredS6a,
+						   StIdle, acTccExpired);
+
+		AddStateTableEntry(StIdle,
+						   DiameterS6aProxyEvent::EvTccExpiredS6a,
+						   StIdle, acTccExpired);
+
+		InitialState(StIdle);
+	}
+	~DiameterS6aProxyStateTable_S() {}
+};
+
+typedef ACE_Singleton<DiameterS6aProxyStateTable_S, ACE_Recursive_Thread_Mutex>
+	DiameterS6aProxyStateTable;
+
+DiameterS6aProxyStateMachine::DiameterS6aProxyStateMachine(DiameterCCProxySession &s, ACE_Reactor &reactor, int lModuleId)
+	: AAA_StateMachineWithTimer<DiameterS6aProxyStateMachine>(*this, *DiameterS6aProxyStateTable::instance(), reactor, "AAA_SY_FSM_PROXY"), sessionS6a(s)
+{
+	m_MsgS6a = NULL;
+	mModuleIdS6a = lModuleId; // TBC HV
+}
+
+void DiameterS6aProxyStateMachine::SendS6ancSessionDataS6a(DiameterSyProxyStateMachine &sm,
+														SyncOperation op, DiameterS6aProxyEvent event, bool sessionTccExpiry)
+{
+	if (sm.SySession().SyncSessionHdlr())
+	{
+		SyncDccaProxySessionData syncData;
+		memset(&syncData, 0, sizeof(SyncDccaProxySessionData));
+
+		syncData.op = op;
+		syncData.event = event;
+		syncData.mModuleId = mModuleIdS6a;
+
+		if (sessionTccExpiry)
+		{
+// On Expiry Redis data will be deleted by Key Expire
+#if 0
+						snprintf(syncData.sessionId, 140 , "%s" , sm.sessionIdS6a.c_str() );
+						syncData.appId = sm.appIdS6a;	
+						sm.S6aSession().S6ancSessionHdlr()->RemoveTimeoutData(syncData);
+#endif
+		}
+		else
+		{
+			// changed to below 2 lines - snprintf(syncData.sessionId, 140, "%s", sm.m_MsgS6a->sessionId.c_str());
+			std::strncpy(syncData.sessionId, sm.m_MsgS6a->sessionId.c_str(), sizeof(syncData.sessionId) - 1);
+			syncData.sessionId[sizeof(syncData.sessionId) - 1] = '\0';
+
+			syncData.appId = sm.m_MsgS6a->hdr.mApplId;
+
+			if (SYNC_OP_ADD == syncData.op)
+			{
+				if (sm.m_SrcS6a)
+				{
+					snprintf(syncData.sourceName, 140, "%s", sm.m_SrcS6a->PeerData().m_Identity.c_str());
+				}
+
+				if (*sm.m_DestS6a)
+				{
+					snprintf(syncData.destName, 140, "%s", (*sm.m_DestS6a)->PeerData().m_Identity.c_str());
+				}
+				AAA_LOG((LM_DEBUG, "%T |CC_S6a_FSM| SYNC_OP_ADD  SId:%s APPID:%d Mid:%d OH:%s DH:%s \n",
+						 syncData.sessionId, syncData.appId, syncData.mModuleId, syncData.sourceName, syncData.destName));
+			}
+			else
+			{
+				AAA_LOG((LM_DEBUG, "%T |CC_S6a_FSM| SYNC_OP_DEL  SId:%s APPID:%d Mid:%d \n",
+						 syncData.sessionId, syncData.appId, syncData.mModuleId));
+			}
+
+			if (DIAMETER_CFG_TRANSPORT()->use_sentinel == 1)
+				sm.S6aSession().SyncSessionHdlr()->SendSyncData(syncData);
+			else
+            AAA_LOG((LM_DEBUG,"Alert: Enable Sentinel in diameter.cfg & configure Sentinel.cfg" ));
+				//DIAMETER_SESSION_SYNC()->syncSession(syncData);
+		}
+	}
+	else
+	{
+		AAA_LOG((LM_DEBUG, "%T |CC_S6a_FSM| Failed to get object"));
+	}
+}

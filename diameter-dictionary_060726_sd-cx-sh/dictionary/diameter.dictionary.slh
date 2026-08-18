@@ -1,0 +1,427 @@
+< message>
+< command = LCSRoutingInfoRequest>
+< command-flags = request proxyable error transmit >
+< cmd-code = 8388622 >
+< protocol-version = 1 >
+< /command>
+
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code =  263 encrypt = yes multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = VendorSpecificApplicationId  multiple = yes >
+    <grouped-avp-code = 260 encrypt = yes >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = AuthSessionState type = Enumerated >
+    <avp-code = 277 encrypt = yes multiple = no >
+    <avp-flags = null null null >
+
+</avp>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code =  264 encrypt = yes multiple = no >
+    <avp-flags =  null mandatory null>
+</avp>
+<avp>
+    <avp-name = OriginRealm  type = OctetString >
+    <avp-code = 296 encrypt = yes multiple = no  >
+    <avp-flags =  null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationHost  type = OctetString >
+    <avp-code = 293 encrypt = yes multiple = no  >
+    <avp-flags =  null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationRealm  type = OctetString >
+    <avp-code = 283 encrypt = yes multiple = no  >
+    <avp-flags =  null mandatory null >
+</avp>
+<avp>
+    <avp-name = UserName type = OctetString>
+    <avp-code = 1  encrypt = yes multiple = no >
+    <avp-flags = null mandatory null>
+</avp>
+<avp>
+    <avp-name = MSISDN type = OctetString >
+    <avp-code = 701 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = GMLCNumber type = OctetString >
+    <avp-code = 1474 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+</avp>
+<grouped = SupportedFeatures multiple = yes >
+    <grouped-avp-code = 628 encrypt = yes >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord  type = OctetString >
+    <avp-code = 282  encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+< /message>
+
+
+<message>
+
+    <command = LCSRoutingInfoAnswer>
+        <cmd-code = 8388622 >
+        <command-flags = null proxyable null null>
+        <protocol-version = 1 >
+    </command>
+
+    <avp>
+        <avp-name = SessionId type = OctetString >
+        <avp-code =  263 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+
+    </avp>
+    <grouped = VendorSpecificApplicationId  multiple = yes >
+        <grouped-avp-code = 260 encrypt = yes >
+        <grouped-avp-flags = null mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = ResultCode  type = Unsigned32 >
+        <avp-code = 268 encrypt = no multiple = no  >
+        <avp-flags =  null mandatory protected >
+
+    </avp>
+    <grouped = ExperimentalResult multiple = no >
+        <grouped-avp-code = 297 encrypt = no >
+        <grouped-avp-flags = null mandatory protected >
+    </grouped>
+    <avp>
+        <avp-name = AuthSessionState type = Enumerated >
+        <avp-code = 277 encrypt = yes multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = OriginHost type = OctetString >
+        <avp-code =  264 encrypt = yes multiple = no >
+        <avp-flags =  null mandatory null>
+
+    </avp>
+    <avp>
+        <avp-name = OriginRealm  type = OctetString >
+        <avp-code = 296 encrypt = yes multiple = no  >
+        <avp-flags =  null mandatory null >
+    </avp>
+
+    <grouped = SupportedFeatures multiple = yes >
+        <grouped-avp-code = 628 encrypt = yes >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = UserName type = OctetString>
+        <avp-code = 1  encrypt = yes multiple = no >
+        <avp-flags = null mandatory null>
+    </avp>
+    <avp>
+        <avp-name = MSISDN type = OctetString >
+        <avp-code = 701 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LMSI type = OctetString >
+        <avp-code = 2400 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = ServingNode multiple = no >
+        <grouped-avp-code = 2401 encrypt = yes >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <grouped = AdditionalServingNode multiple = yes >
+        <grouped-avp-code = 2406 encrypt = yes >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name =  GMLCAddress type = OctetString >
+        <avp-code = 2405   encrypt = yes multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name =  PPRAddress type = OctetString>
+        <avp-code = 2407   encrypt = yes multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = RIAFlags  type = Unsigned32 >
+        <avp-code = 2411  encrypt = yes multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = FailedAVP multiple = no >
+        <grouped-avp-code = 279 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+        <grouped-vendor-id = 0 >
+    </grouped>
+    <grouped = ProxyInfo multiple = yes >
+    	<grouped-avp-code = 284 encrypt = no >
+    	<grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = RouteRecord  type = OctetString >
+        <avp-code = 282  encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+</message>
+
+<grouped-avp>
+    <grouped-avp-name = FailedAVP type = Grouped >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 0 >
+    <avp>
+        <avp-name = ErrorMessage type = OctetString>
+        <avp-code = 281 encrypt = no multiple = no >
+        <avp-flags =  null null protected >
+        <vendor-id = 0 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = SupportedFeatures type = Grouped >
+    <grouped-avp-code = 628 encrypt = yes >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = VendorId  type = Integer32 >
+        <avp-code = 266  encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = FeatureListID type = Unsigned32 >
+        <avp-code = 629 encrypt = yes multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = FeatureList type = Unsigned32>
+        <avp-code = 630 encrypt = yes multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+<grouped-avp>
+    <grouped-avp-name = ServingNode  type = Grouped >
+    <grouped-avp-code = 2401 encrypt = no  >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = SGSNNumber type = OctetString >
+        <avp-code = 1489 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SGSNName type = OctetString >
+        <avp-code = 2409 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SGSNRealm type = OctetString >
+        <avp-code = 2410 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MMEName type = OctetString >
+        <avp-code = 2402 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MMERealm type = OctetString >
+        <avp-code = 2408 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MSCNumber type = OctetString >
+        <avp-code = 2403 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPAAAServerName type = OctetString >
+        <avp-code = 318 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LCSCapabilitiesSets type = Unsigned32>
+        <avp-code = 2404   encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name =  GMLCAddress type = OctetString >
+        <avp-code = 2405   encrypt = yes multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = AdditionalServingNode  type = Grouped >
+    <grouped-avp-code = 2406 encrypt = no  >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = SGSNNumber type = OctetString >
+        <avp-code = 1489 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SGSNName type = OctetString >
+        <avp-code = 2409 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SGSNRealm type = OctetString >
+        <avp-code = 2410 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MMEName type = OctetString >
+        <avp-code = 2402 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MMERealm type = OctetString >
+        <avp-code = 2408 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MSCNumber type = OctetString >
+        <avp-code = 2403 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPAAAServerName type = OctetString >
+        <avp-code = 318 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LCSCapabilitiesSets type = Unsigned32>
+        <avp-code = 2404   encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name =  GMLCAddress type = OctetString>
+        <avp-code = 2405   encrypt = yes multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+</grouped-avp>
+
+
+<grouped-avp>
+    <grouped-avp-name = VendorSpecificApplicationId  type = Grouped >
+    <grouped-avp-code = 260 encrypt = yes  >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = VendorId  type = Unsigned32 >
+        <avp-code = 266  encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = AuthApplicationId type = Unsigned32 >
+        <avp-code = 258 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = AcctApplicationId  type = Unsigned32 >
+        <avp-code = 259 encrypt = yes multiple = no >
+        <avp-flags = null null null >
+        <vendor-id = 10415 >
+    </avp>
+
+</grouped-avp>
+
+
+<grouped-avp>
+    <grouped-avp-name = ProxyInfo type = Grouped >
+    <grouped-avp-code = 284 encrypt = yes  >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+
+
+    <avp>
+        <avp-name = ProxyHost type = OctetString >
+        <avp-code = 280  encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ProxyState type = OctetString >
+        <avp-code = 33 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+</grouped-avp>
+<grouped-avp>
+    <grouped-avp-name = ExperimentalResult type = Grouped >
+    <grouped-avp-code = 297 encrypt = yes  >
+    <grouped-avp-flags = null mandatory null >
+    <grouped-vendor-id = 10415 >
+
+    <avp>
+        <avp-name = VendorId  type = Integer32 >
+        <avp-code = 266  encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+    <avp>
+        <avp-name = ExperimentalResultCode type = Unsigned32 >
+        <avp-code = 298 encrypt = yes multiple = no >
+        <avp-flags = null mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+
+</grouped-avp>

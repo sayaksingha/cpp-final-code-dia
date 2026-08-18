@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<scenario>
+
+    <counter>
+        <counterdef name="HbH-counter" init="100011" min="100011" max="999999"></counterdef>
+        <counterdef name="EtE-counter" init="100022" min="100022" max="999999"></counterdef>
+        <counterdef name="Sess-counter" init="9000" min="2000000000" max="9999999999"></counterdef>
+        <counterdef name="msisdn-counter" init="97517394463" min="97517394463" max="97517394463"></counterdef>
+        <counterdef name="Imsi-counter" init="234509999999000" min="234509999999999"
+            max="234509999999999"></counterdef>
+    </counter>
+
+    <init>
+        <send channel="channel-1">
+            <action>
+                <inc-counter name="HbH-counter"></inc-counter>
+                <inc-counter name="EtE-counter"></inc-counter>
+                <set-value name="HbH-id" format="$(HbH-counter)"></set-value>
+                <set-value name="EtE-id" format="$(EtE-counter)"></set-value>
+            </action>
+
+            <command name="CER">
+                <avp name="Origin-Host" value="CWS_DRA1"> </avp>
+                <avp name="Origin-Realm" value="CWS_DRA1_REL"> </avp>
+                <avp name="Host-IP-Address" value="0x0a000508"> </avp>
+                <avp name="Vendor-Id" value="10415"> </avp>
+                <avp name="Product-Name" value="Client"> </avp>
+                <avp name="Vendor-Specific-Application-Id">
+                    <avp name="Vendor-Id" value="10415"></avp>
+                    <avp name="Auth-Application-Id" value="16777303"></avp>
+                </avp>
+                <avp name="Firmware-Revision" value="1"> </avp>
+            </command>
+        </send>
+
+        <receive channel="channel-1">
+            <command name="CEA">
+            </command>
+        </receive>
+    </init>
+
+    <default behaviour="success">
+        <receive channel="channel-1">
+            <command name="DWR">
+            </command>
+            <action>
+                <store name="dwrHopByHop" entity="HbH-id"> </store>
+                <store name="dwrEndToEnd" entity="EtE-id"> </store>
+            </action>
+        </receive>
+
+        <send channel="channel-1">
+            <action>
+                <restore name="dwrHopByHop" entity="HbH-id"> </restore>
+                <restore name="dwrEndToEnd" entity="EtE-id"> </restore>
+            </action>
+            <command name="DWA">
+                <avp name="Origin-Host" value="CWS_DRA1"> </avp>
+                <avp name="Origin-Realm" value="CWS_DRA1_REL"> </avp>
+                <avp name="Result-Code" value="2001"> </avp>
+            </command>
+        </send>
+    </default>
+
+
+<traffic>
+<send channel="channel-1">
+            <action>
+                <inc-counter name="HbH-counter"></inc-counter>
+                <inc-counter name="EtE-counter"></inc-counter>
+                <inc-counter name="Sess-counter"> </inc-counter>
+                <set-value name="HbH-id" format="$(HbH-counter)"></set-value>
+                <set-value name="EtE-id" format="$(EtE-counter)"></set-value>
+                <set-value name="Origin-Host" format="CWS_DRA2"></set-value>
+                <set-value name="Origin-Realm" format="CWS_DRA1_REL"></set-value>
+                <set-value name="Destination-Host" format="CWS_DRA1"></set-value>
+                <set-value name="Destination-Realm" format="CWS_PCRF_SER1"></set-value>
+                <set-value name="Session-Id" format="ccwsugw_abcdsa$(Sess-counter)"></set-value>
+                <store name="SESSION_ID" entity="Session-Id"></store>
+                <store name="ORIG-HOST" entity="Origin-Host"></store>
+                <store name="ORIG-REALM" entity="Origin-Realm"></store>
+                <store name="Destination-REALM" entity="Destination-Realm"></store>
+            </action>
+
+            <command name="TDFSessionRequest">
+                <avp name="Session-Id" value="value_is_replaced"> </avp>
+                <avp name="DRMP" value="1"> </avp>
+                <avp name="Vendor-Specific-Application-Id">
+                    <avp name="Vendor-Id" value="10415"> </avp>
+                    <avp name="Auth-Application-Id" value="16777303"> </avp>
+                </avp>
+
+                <avp name="Origin-Host" value="value_is_replaced"> </avp>
+                <avp name="Origin-Realm" value="value_is_replaced"> </avp>
+                <avp name="Destination-Host" value="value_is_replaced"> </avp>
+                <avp name="Destination-Realm" value="value_is_replaced"> </avp>
+
+                <avp name="Supported-Features">
+                    <avp name="Vendor-Id" value="10415"> </avp>
+                    <avp name="Feature-List-ID" value="1"> </avp>
+                    <avp name="Feature-List" value="1"> </avp>
+                </avp>
+
+                <avp name="Origin-State-Id" value="10101010101"> </avp>
+
+                <avp name="OC-Supported-Features">
+                   <avp name="OC-Feature-Vector" value="2"></avp>
+                </avp>
+
+                <avp name="Subscription-Id">
+                        <avp name="Subscription-Id-Data" value="248252221230"></avp>
+                        <avp name="Subscription-Id-Type" value="0"></avp>
+                </avp>
+                
+                <avp name="Framed-IP-Address" value="0x0a000040"> </avp>
+                <avp name="Framed-IPv6-Prefix" value="0x0a000040"> </avp>
+
+                <avp name="IP-CAN-Type" value="0"></avp>
+
+                <avp name="RAT-Type" value="0"></avp>
+
+                <avp name="AN-Trusted" value="0"></avp>
+
+                <avp name="User-Equipment-Info">
+                    <avp name="User-Equipment-Info-Type" value="1"></avp>
+                    <avp name="User-Equipment-Info-Value" value="0x001A2B3C4D5E"></avp>
+                </avp>
+
+                <avp name="User-Equipment-Info-Extension">
+                        <avp name="User-Equipment-Info-IMEI" value="123456789012345"></avp>
+                        <avp name="User-Equipment-Info-IMEISV" value="1234567890123456"></avp>
+                        <avp name="User-Equipment-Info-MAC" value="00:1A:2B:3C:4D:5E"></avp>
+                        <avp name="User-Equipment-Info-EUI64" value="00:1A:2B:FF:FE:3C:4D:5E"></avp>
+                        <avp name="User-Equipment-Info-Modified-EUI64" value="02:1A:2B:FF:FE:3C:4D:5E"></avp>
+                        <avp name="User-Equipment-Info-IMEI" value="123456789012345"></avp>
+                        <avp name="User-Equipment-Info-IMEISV" value="check"></avp>
+                </avp>
+
+                <avp name="QoS-Information">
+                        <avp name="QoS-Class-Identifier" value="0"></avp>
+                        <avp name="Max-Requested-Bandwidth-DL" value="0"></avp>
+                        <avp name="Max-Requested-Bandwidth-UL" value="0"></avp>
+                        <avp name="Guaranteed-Bitrate-DL" value="0"></avp>
+                        <avp name="Guaranteed-Bitrate-UL" value="0"></avp>
+                        <avp name="Bearer-Identifier" value="check"></avp>
+                        <avp name="Extended-GBR-UL" value="1"></avp>
+                        <avp name="Extended-GBR-DL" value="1"></avp>
+                        <avp name="Allocation-Retention-Priority">
+                        <avp name="Priority-Level" value="0"></avp>
+                            <avp name="Pre-emption-Capability" value="0"></avp>
+                            <avp name="Pre-emption-Vulnerability" value="0"></avp>
+                        </avp>
+                        <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                        <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                        <avp name="Conditional-APN-Aggregate-Max-Bitrate">
+                            <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                            <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                            <avp name="IP-CAN-Type" value="0"></avp>
+                            <avp name="RAT-Type" value="0"></avp>
+                        </avp>
+                </avp>
+                <avp name="AN-GW-Address" value="0x00010a000694"></avp>
+                <avp name="3GPP-SGSN-Address" value="0x0a000508"></avp>
+                <avp name="3GPP-GGSN-Address" value="0x0a000508"></avp>
+                <avp name="3GPP-SGSN-IPv6-Address" value="0x0a000508"></avp>
+                <avp name="3GPP-GGSN-IPv6-Address" value="0x0a000508"></avp>
+                <avp name="3GPP-Selection-Mode" value="check"></avp>
+                <avp name="Dynamic-Address-Flag" value="0"></avp>
+                <avp name="Dynamic-Address-Flag-Extension" value="0"></avp>
+                <avp name="PDN-Connection-Charging-ID" value="123"></avp>
+                <avp name="3GPP-SGSN-MCC-MNC" value="check"></avp>
+                <avp name="PDN-Connection-Charging-ID" value="123"></avp>
+                <avp name="RAI" value="\x21\xF3\x12\x34\x56"></avp>
+                <avp name="3GPP-User-Location-Info" value="check"></avp>
+                <avp name="Fixed-User-Location-Info">
+                    <avp name="SSID" value="check"></avp>
+                    <avp name="BSSID" value="check"></avp>
+                    <avp name="Logical-Access-ID" value="check"></avp>
+                    <avp name="Physical-Access-ID" value="check"></avp>
+                </avp>
+                <avp name="User-CSG-Information">
+                    <avp name="CSG-Id" value="0"></avp>
+                    <avp name="CSG-Access-Mode" value="0"></avp>
+                    <avp name="CSG-Membership-Indication" value="0"></avp>
+                </avp>
+
+                <avp name="TWAN-Identifier" value="0x34333231"></avp>
+                <avp name="3GPP-MS-TimeZone" value="check"></avp>
+                <avp name="3GPP-Charging-Characteristics" value="check"></avp>
+                <avp name="Called-Station-Id" value="cwsnet"> </avp>
+
+
+                <avp name="Online" value="1"></avp>
+                <avp name="Offline" value="1"></avp>
+
+                <avp name="Usage-Monitoring-Information">
+                    <avp name="Monitoring-Key" value="BROWSING_TURKSAT"> </avp>
+                    <avp name="Quota-Consumption-Time" value="1"></avp>
+                    <avp name="Usage-Monitoring-Level" value="1"> </avp>
+                    <avp name="Used-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="3600"></avp>
+                    </avp>
+                    <avp name="Granted-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="900"></avp>
+                    </avp>
+                    <!-- Help from Internet -->
+                    <avp name="Usage-Monitoring-Level" value="0"></avp>
+                    <avp name="Usage-Monitoring-Report" value="0"></avp>
+                    <avp name="Usage-Monitoring-Support" value="0"></avp>
+                </avp>
+                <avp name="Event-Trigger" value="1"></avp>
+                <avp name="Presence-Reporting-Area-Information">
+                        <avp name="Presence-Reporting-Area-Identifier" value="check"> </avp>
+                        <avp name="Presence-Reporting-Area-Elements-List" value="check"> </avp>
+                        <avp name="Presence-Reporting-Area-Status" value="0"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="Presence-Reporting-Area-Node" value="0"> </avp>
+                </avp>
+                    <!-- Help from Internet -->
+                <avp name="3GPP2-BSID" value="check"></avp>
+
+                    <!-- Taking Example of Charging-Information from Internet-->
+
+                <avp name="Charging-Information">
+                        <avp name="Primary-Event-Charging-Function-Name" value="aaa://ecf1.operator.com"></avp>
+                        <avp name="Secondary-Event-Charging-Function-Name" value="aaa://ecf2.operator.com"></avp>
+                        <avp name="Primary-Charging-Collection-Function-Name" value="aaa://ccf1.operator.com"></avp>
+                        <avp name="Secondary-Charging-Collection-Function-Name" value="aaa://ccf2.operator.com"></avp>
+                </avp>
+          
+                    <!-- Taking Example of ADC Rule Install from Internet -->
+                <avp name="ADC-Rule-Install">
+                    <avp name="ADC-Rule-Definition">
+                        <avp name="ADC-Rule-Name" value="check"></avp>
+                        <avp name="TDF-Application-Identifier" value="check"></avp>
+                        <avp name="Sponsor-Identity" value="check"></avp>
+                        <avp name="Application-Service-Provider-Identity" value="check"></avp>
+                        <avp name="Redirect-Information">
+                            <avp name="Redirect-Support" value="1"></avp>
+                            <avp name="Redirect-Address-Type" value="1"></avp>
+                            <avp name="Redirect-Server-Address" value="check"></avp>
+                        </avp>
+                        <avp name="Traffic-Steering-Policy-Identifier-DL" value="check"></avp>
+                        <avp name="Traffic-Steering-Policy-Identifier-UL" value="check"></avp>
+                        <avp name="ToS-Traffic-Class" value="check"></avp>
+                        <avp name="Flow-Information">
+                            <avp name="Flow-Description" value="check"></avp>
+                            <avp name="Packet-Filter-Identifier" value="check"></avp>
+                            <avp name="ToS-Traffic-Class" value="check"></avp>
+                            <avp name="Security-Parameter-Index" value="check"></avp>
+                            <avp name="Flow-Label" value="check"></avp>
+                            <avp name="Flow-Direction" value="1"></avp>
+                            <avp name="Routing-Rule-Identifier" value="check"></avp>
+                        </avp>
+
+                        <avp name="Service-Identifier" value="1001"></avp>
+                        <avp name="Rating-Group" value="2001"></avp>
+                        <avp name="Reporting-Level" value="0"></avp>
+                        <avp name="Online" value="1"></avp>
+                        <avp name="Offline" value="1"></avp>
+                        <avp name="Metering-Method" value="0"></avp>
+                        <avp name="Precedence" value="1"></avp>
+                        <avp name="Flow-Status" value="2"></avp>
+
+                        <avp name="QoS-Information">
+                                <avp name="QoS-Class-Identifier" value="0"></avp>
+                                <avp name="Max-Requested-Bandwidth-DL" value="0"></avp>
+                                <avp name="Max-Requested-Bandwidth-UL" value="0"></avp>
+                                <avp name="Guaranteed-Bitrate-DL" value="0"></avp>
+                                <avp name="Guaranteed-Bitrate-UL" value="0"></avp>
+                                <avp name="Bearer-Identifier" value="check"></avp>
+                                <avp name="Extended-GBR-UL" value="1"></avp>
+                        <avp name="Extended-GBR-DL" value="1"></avp>
+                                <avp name="Allocation-Retention-Priority">
+                                    <avp name="Priority-Level" value="0"></avp>
+                                    <avp name="Pre-emption-Capability" value="0"></avp>
+                                    <avp name="Pre-emption-Vulnerability" value="0"></avp>
+                                </avp>
+                                <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                                <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                                <avp name="Conditional-APN-Aggregate-Max-Bitrate">
+                                        <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                                        <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                                        <avp name="IP-CAN-Type" value="0"></avp>
+                                        <avp name="RAT-Type" value="0"></avp>
+                                </avp>
+                        </avp>
+                        <avp name="Monitoring-Key" value="BROWSING_TURKSAT"></avp>
+                        <avp name="Mute-Notification" value="0"></avp>
+                    </avp>
+
+                    <avp name="ADC-Rule-Name" value="check"></avp>
+                    <avp name="ADC-Rule-Base-Name" value="check"></avp>
+                    <avp name="Monitoring-Flags" value="0"></avp>
+                    <avp name="Rule-Activation-Time" value="1752494400"></avp>
+                    <avp name="Rule-Deactivation-Time" value="1752580800"></avp>
+                </avp>
+                <avp name="Revalidation-Time" value="0xe2536396"></avp>
+                <avp name="Logical-Access-ID" value="check"> </avp>
+                <avp name="Physical-Access-ID" value="check"> </avp>
+                <avp name="Proxy-Info">
+                    <avp name="Proxy-Host" value="check"> </avp>
+                    <avp name="Proxy-State" value="check"> </avp>
+                </avp>
+                    <avp name="Route-Record" value="check"> </avp>
+
+                <!-- <avp name="Proxy-Info">
+                    <avp name="Proxy-Host" value="proxy.network.com"> </avp>
+                    <avp name="Proxy-State" value="0001"> </avp>
+                </avp>
+
+                <avp name="Route-Record" value="relay.network.com"> </avp> -->
+
+            </command>
+        </send>
+
+        <receive channel="channel-1">
+            <action>
+                <restore name="dwrHopByHop" entity="HbH-id"> </restore>
+                <restore name="dwrEndToEnd" entity="EtE-id"> </restore>
+                <restore name="SESSION_ID" entity="Session-Id"></restore>
+                <stop-timer></stop-timer>
+            </action>
+
+            <command name="TDFSessionAnswer">
+                <avp name="Session-Id" value="value_is_replaced"></avp>
+                <avp name="Result-Code" value="2001"></avp>
+            </command>
+            <action>
+                <check-value
+                name="Result-Code" behaviour="error"></check-value>
+            </action>
+
+        </receive>
+
+        <send channel="channel-1">
+            <action>
+                <inc-counter name="HbH-counter"></inc-counter>
+                <inc-counter name="EtE-counter"></inc-counter>
+                <inc-counter name="Sess-counter"> </inc-counter>
+                <set-value name="HbH-id" format="$(HbH-counter)"></set-value>
+                <set-value name="EtE-id" format="$(EtE-counter)"></set-value>
+                <set-value name="Origin-Host" format="CWS_DRA1"></set-value>
+                <set-value name="Origin-Realm" format="CWS_DRA1_REL"></set-value>
+                <set-value name="Destination-Host" format="CWS_DRA1"></set-value>
+                <set-value name="Destination-Realm" format="CWS_PCRF_SER1"></set-value>
+                <set-value name="Session-Id" format="$(Sess-counter)"></set-value>
+                <store name="SESSION_ID" entity="Session-Id"></store>
+                <store name="ORIG-HOST" entity="Origin-Host"></store>
+                <store name="ORIG-REALM" entity="Origin-Realm"></store>
+                <store name="Destination-REALM" entity="Destination-Realm"></store>
+            </action>
+
+            <command name="ReAuthRequest">
+                <avp name="Session-Id" value="value_is_replaced"></avp>
+                <avp name="DRMP" value="1"> </avp>
+                <avp name="Auth-Application-Id" value="16777303"> </avp>
+                <avp name="Origin-Host" value="value_is_replaced"> </avp>
+                <avp name="Origin-Realm" value="value_is_replaced"> </avp>
+                <avp name="Destination-Host" value="value_is_replaced"> </avp>
+                <avp name="Destination-Realm" value="value_is_replaced"> </avp>
+
+                <avp name="Re-Auth-Request-Type" value="0"> </avp>
+                 <avp name="Origin-State-Id" value="10101010101"> </avp>
+		        <avp name="OC-Supported-Features">
+                      <avp name="OC-Feature-Vector" value="2"></avp>
+                </avp>
+                <avp name="QoS-Information">
+                        <avp name="QoS-Class-Identifier" value="0"></avp>
+                        <avp name="Max-Requested-Bandwidth-DL" value="0"></avp>
+                        <avp name="Max-Requested-Bandwidth-UL" value="0"></avp>
+                        <avp name="Guaranteed-Bitrate-DL" value="0"></avp>
+                        <avp name="Guaranteed-Bitrate-UL" value="0"></avp>
+                        <avp name="Extended-GBR-UL" value="1"></avp>
+                        <avp name="Extended-GBR-DL" value="1"></avp>
+                        <avp name="Bearer-Identifier" value="check"></avp>
+                        <avp name="Allocation-Retention-Priority">
+                        <avp name="Priority-Level" value="0"></avp>
+                            <avp name="Pre-emption-Capability" value="0"></avp>
+                            <avp name="Pre-emption-Vulnerability" value="0"></avp>
+                        </avp>
+                        <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                        <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                        <avp name="Conditional-APN-Aggregate-Max-Bitrate">
+                            <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                            <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                            <avp name="IP-CAN-Type" value="0"></avp>
+                            <avp name="RAT-Type" value="0"></avp>
+                        </avp>
+                </avp>
+
+                <avp name="Event-Report-Indication">
+
+    		<avp name="AN-Trusted" value="0"></avp>
+
+    		<avp name="Event-Trigger" value="0"></avp>
+
+    		<avp name="User-CSG-Information">
+        		<!-- Add User-CSG-Information AVPs here -->
+				<avp name="CSG-Id" value="0"></avp>
+                    <avp name="CSG-Access-Mode" value="0"></avp>
+                    <avp name="CSG-Membership-Indication" value="0"></avp>
+    		</avp>
+
+    		<avp name="IP-CAN-Type" value="0"></avp>
+
+   			 <avp name="AN-GW-Address" value="192.168.1.1"></avp>
+
+   			 <avp name="3GPP-SGSN-Address" value="0x0a000508"></avp>
+
+    		<avp name="3GPP-SGSN-IPv6-Address" value="0x0a000508"></avp>
+
+    		<avp name="3GPP-SGSN-MCC-MNC" value="check"></avp>
+
+    		<avp name="Framed-IP-Address" value="0x0a000040"></avp>
+
+    		<avp name="RAT-Type" value="0"></avp>
+
+    		<avp name="RAI" value="check"></avp>
+
+    		<avp name="3GPP-User-Location-Info" value="check"></avp>
+
+    		<avp name="Trace-Data">
+        <!-- Add Trace-Data AVPs here -->
+        <avp name="Trace-Reference" value="trace-ref"></avp>
+
+    <avp name="Trace-Depth" value="1"></avp>
+
+    <avp name="Trace-NE-Type-List" value="check"></avp>
+
+    <avp name="Trace-Interface-List" value="check"></avp>
+
+    <avp name="Trace-Event-List" value="check"></avp>
+
+    <avp name="OMC-Id" value="check"></avp>
+
+    <avp name="Trace-Collection-Entity" value="check"></avp>
+
+    <avp name="MDT-Configuration">
+
+        <!-- Add MDT-Configuration AVPs here -->
+        <avp name="Job-Type" value="1"></avp>
+
+    <avp name="Area-Scope">
+        <avp name="Cell-Global-Identity" value="check"></avp>
+
+    <avp name="E-UTRAN-Cell-Global-Identity" value="check"></avp>
+
+    <avp name="Routing-Area-Identity" value="check"></avp>
+
+    <avp name="Location-Area-Identity" value="check"></avp>
+
+    <avp name="Tracking-Area-Identity" value="check"></avp>
+    </avp>
+
+    <avp name="List-Of-Measurements" value="1"></avp>
+
+    <avp name="Reporting-Trigger" value="1"></avp>
+
+    <avp name="Report-Interval" value="1"></avp>
+
+    <avp name="Report-Amount" value="1"></avp>
+
+    <avp name="Event-Threshold-RSRP" value="1"></avp>
+
+    <avp name="Event-Threshold-RSRQ" value="1"></avp>
+
+    <avp name="Logging-Interval" value="1"></avp>
+
+    <avp name="Logging-Duration" value="1"></avp>
+
+    <avp name="Measurement-Period-LTE" value="1"></avp>
+
+    <avp name="Measurement-Period-UMTS" value="1"></avp>
+
+    <avp name="Collection-Period-RRM-LTE" value="1"></avp>
+
+    <avp name="Collection-Period-RRM-UMTS" value="1"></avp>
+
+    <avp name="Positioning-Method" value="check"></avp>
+
+    <avp name="Measurement-Quantity" value="check"></avp>
+
+    <avp name="Event-Threshold-Event-1F" value="1"></avp>
+
+    <avp name="Event-Threshold-Event-1I" value="1"></avp>
+
+    </avp>
+    		</avp>
+
+    		<avp name="Trace-Reference" value="check"></avp>
+
+    		<avp name="3GPP2-BSID" value="check"></avp>
+
+    		<avp name="3GPP-MS-TimeZone" value="check"></avp>
+
+    		<avp name="Routing-Rule-Identifier" value="check"></avp>
+
+    		<avp name="UE-Local-IP-Address" value="check"></avp>
+
+    		<avp name="HeNB-Local-IP-Address" value="check"></avp>
+
+    		<avp name="UDP-Source-Port" value="5060"></avp>
+
+    		<avp name="Presence-Reporting-Area-Information">
+        <!-- Add Presence-Reporting-Area-Information AVPs here -->
+        <avp name="Presence-Reporting-Area-Identifier" value="check"> </avp>
+        
+                        <avp name="Presence-Reporting-Area-Elements-List" value="check"> </avp>
+                        <avp name="Presence-Reporting-Area-Status" value="0"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="Presence-Reporting-Area-Node" value="0"> </avp>
+    		</avp>
+
+		</avp>
+                <!-- Taking Example of ADC Rule Install from Internet -->
+                <avp name="ADC-Rule-Install">
+                    <avp name="ADC-Rule-Definition">
+                        <avp name="ADC-Rule-Name" value="check"></avp>
+                        <avp name="TDF-Application-Identifier" value="check"></avp>
+                        <avp name="Sponsor-Identity" value="check"></avp>
+                        <avp name="Application-Service-Provider-Identity" value="check"></avp>
+                        <avp name="Redirect-Information">
+                            <avp name="Redirect-Support" value="1"></avp>
+                            <avp name="Redirect-Address-Type" value="1"></avp>
+                            <avp name="Redirect-Server-Address" value="check"></avp>
+                        </avp>
+                        <avp name="Traffic-Steering-Policy-Identifier-DL" value="check"></avp>
+                        <avp name="Traffic-Steering-Policy-Identifier-UL" value="check"></avp>
+                        <avp name="ToS-Traffic-Class" value="check"></avp>
+                        <avp name="Flow-Information">
+                            <avp name="Flow-Description" value="check"></avp>
+                            <avp name="Packet-Filter-Identifier" value="check"></avp>
+                            <avp name="ToS-Traffic-Class" value="check"></avp>
+                            <avp name="Security-Parameter-Index" value="check"></avp>
+                            <avp name="Flow-Label" value="check"></avp>
+                            <avp name="Flow-Direction" value="1"></avp>
+                            <avp name="Routing-Rule-Identifier" value="check"></avp>
+                        </avp>
+
+                        <avp name="Service-Identifier" value="1001"></avp>
+                        <avp name="Rating-Group" value="2001"></avp>
+                        <avp name="Reporting-Level" value="0"></avp>
+                        <avp name="Online" value="1"></avp>
+                        <avp name="Offline" value="1"></avp>
+                        <avp name="Metering-Method" value="0"></avp>
+                        <avp name="Precedence" value="1"></avp>
+                        <avp name="Flow-Status" value="2"></avp>
+
+                        <avp name="QoS-Information">
+                                <avp name="QoS-Class-Identifier" value="0"></avp>
+                                <avp name="Max-Requested-Bandwidth-DL" value="0"></avp>
+                                <avp name="Max-Requested-Bandwidth-UL" value="0"></avp>
+                                <avp name="Guaranteed-Bitrate-DL" value="0"></avp>
+                                <avp name="Guaranteed-Bitrate-UL" value="0"></avp>
+                                <avp name="Bearer-Identifier" value="check"></avp>
+                                <avp name="Extended-GBR-UL" value="1"></avp>
+                        <avp name="Extended-GBR-DL" value="1"></avp>
+                                <avp name="Allocation-Retention-Priority">
+                                    <avp name="Priority-Level" value="0"></avp>
+                                    <avp name="Pre-emption-Capability" value="0"></avp>
+                                    <avp name="Pre-emption-Vulnerability" value="0"></avp>
+                                </avp>
+                                <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                                <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                                <avp name="Conditional-APN-Aggregate-Max-Bitrate">
+                                        <avp name="APN-Aggregate-Max-Bitrate-UL" value="0"></avp>
+                                        <avp name="APN-Aggregate-Max-Bitrate-DL" value="0"></avp>
+                                        <avp name="IP-CAN-Type" value="0"></avp>
+                                        <avp name="RAT-Type" value="0"></avp>
+                                </avp>
+                        </avp>
+                        <avp name="Monitoring-Key" value="BROWSING_TURKSAT"></avp>
+                        <avp name="Mute-Notification" value="0"></avp>
+                    </avp>
+
+                    <avp name="ADC-Rule-Name" value="check"></avp>
+                    <avp name="ADC-Rule-Base-Name" value="check"></avp>
+                    <avp name="Monitoring-Flags" value="0"></avp>
+                    <avp name="Rule-Activation-Time" value="1752494400"></avp>
+                    <avp name="Rule-Deactivation-Time" value="1752580800"></avp>
+                </avp>
+
+                <avp name="ADC-Rule-Remove">
+                    <avp name="ADC-Rule-Name" value="check"> </avp>
+                    <avp name="ADC-Rule-Base-Name" value="check"> </avp>
+                </avp>
+
+                <avp name="Revalidation-Time" value="0xe2536396"></avp>
+
+                <avp name="Usage-Monitoring-Information">
+                    <avp name="Monitoring-Key" value="BROWSING_TURKSAT"> </avp>
+                    <avp name="Quota-Consumption-Time" value="1"></avp>
+                    <avp name="Usage-Monitoring-Level" value="1"> </avp>
+                    <avp name="Used-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="3600"></avp>
+                    </avp>
+                    <avp name="Granted-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="900"></avp>
+                    </avp>
+                    <!-- Help from Internet -->
+                    <avp name="Usage-Monitoring-Level" value="0"></avp>
+                    <avp name="Usage-Monitoring-Report" value="0"></avp>
+                    <avp name="Usage-Monitoring-Support" value="0"></avp>
+                </avp>
+                <avp name="Event-Trigger" value="1"></avp>
+                <avp name="Proxy-Info">
+                    <avp name="Proxy-Host" value="check"> </avp>
+                    <avp name="Proxy-State" value="check"> </avp>
+                </avp>
+                <avp name="Route-Record" value="check"> </avp>
+
+
+            </command>
+        </send>
+
+        <receive channel="channel-1">
+            <action>
+                <restore name="dwrHopByHop" entity="HbH-id"> </restore>
+                <restore name="dwrEndToEnd" entity="EtE-id"> </restore>
+                <restore name="SESSION_ID" entity="Session-Id"></restore>
+                <stop-timer></stop-timer>
+            </action>
+
+            <command name="ReAuthAnswer">
+                <avp name="Session-Id" value="value_is_replaced"></avp>
+                <avp name="Result-Code" value="2001"></avp>
+            </command>
+            <action>
+                <check-value
+                name="Result-Code" behaviour="error"></check-value>
+            </action>
+
+        </receive>
+
+
+        <send channel="channel-1">
+            <action>
+                <inc-counter name="HbH-counter"></inc-counter>
+                <inc-counter name="EtE-counter"></inc-counter>
+                <inc-counter name="Sess-counter"> </inc-counter>
+                <set-value name="HbH-id" format="$(HbH-counter)"></set-value>
+                <set-value name="EtE-id" format="$(EtE-counter)"></set-value>
+                <set-value name="Origin-Host" format="CWS_DRA1"></set-value>
+                <set-value name="Origin-Realm" format="CWS_DRA1_REL"></set-value>
+                <set-value name="Destination-Host" format="CWS_DRA1"></set-value>
+                <set-value name="Destination-Realm" format="CWS_PCRF_SER1"></set-value>
+                <set-value name="Session-Id" format="$(Sess-counter)"></set-value>
+                <store name="SESSION_ID" entity="Session-Id"></store>
+                <store name="ORIG-HOST" entity="Origin-Host"></store>
+                <store name="ORIG-REALM" entity="Origin-Realm"></store>
+                <store name="Destination-REALM" entity="Destination-Realm"></store>
+            </action>
+
+            <command name="CreditControlRequest">
+                <avp name="Session-Id" value="value_is_replaced"></avp>
+                <avp name="DRMP" value="1"> </avp>
+                <avp name="Auth-Application-Id" value="16777303"> </avp>
+                <avp name="Origin-Host" value="value_is_replaced"> </avp>
+                <avp name="Origin-Realm" value="value_is_replaced"> </avp>
+                <avp name="Destination-Host" value="value_is_replaced"> </avp>
+                <avp name="Destination-Realm" value="value_is_replaced"> </avp>
+
+                <avp name="CC-Request-Type" value="1"></avp>
+                <avp name="CC-Request-Number" value="0"></avp>
+                <avp name="Origin-State-Id" value="10101010101"> </avp>
+                <avp name="CreditManagementStatus" value="1"> </avp>
+                <avp name="OC-Supported-Features">
+                    <avp name="OC-Feature-Vector" value="2"></avp>
+                </avp> 
+                <avp name="Supported-Features">
+                    <avp name="Vendor-Id" value="10415"></avp>
+                    <avp name="Feature-List-ID" value="1"></avp>
+                    <avp name="Feature-List" value="2"></avp>
+                </avp>
+                <avp name="Application-Detection-Information">
+                    <avp name="TDF-Application-Identifier" value="check"></avp>
+                    <avp name="TDF-Application-Instance-Identifier" value="check"></avp>
+                    <avp name="Flow-Information">
+                        <avp name="Flow-Description" value="check"></avp>
+                        <avp name="Packet-Filter-Identifier" value="check"></avp>
+                        <avp name="ToS-Traffic-Class" value="check"></avp>
+                        <avp name="Security-Parameter-Index" value="check"></avp>
+                        <avp name="Flow-Label" value="check"></avp>
+                        <avp name="Flow-Direction" value="1"></avp>
+                        <avp name="Routing-Rule-Identifier" value="check"></avp>
+                    </avp>
+                </avp>
+                <avp name="Event-Report-Indication">
+
+    		<avp name="AN-Trusted" value="0"></avp>
+
+    		<avp name="Event-Trigger" value="0"></avp>
+
+    		<avp name="User-CSG-Information">
+        		<!-- Add User-CSG-Information AVPs here -->
+				<avp name="CSG-Id" value="0"></avp>
+                    <avp name="CSG-Access-Mode" value="0"></avp>
+                    <avp name="CSG-Membership-Indication" value="0"></avp>
+    		</avp>
+
+    		<avp name="IP-CAN-Type" value="0"></avp>
+
+   			 <avp name="AN-GW-Address" value="192.168.1.1"></avp>
+
+   			 <avp name="3GPP-SGSN-Address" value="0x0a000508"></avp>
+
+    		<avp name="3GPP-SGSN-IPv6-Address" value="0x0a000508"></avp>
+
+    		<avp name="3GPP-SGSN-MCC-MNC" value="check"></avp>
+
+    		<avp name="Framed-IP-Address" value="0x0a000040"></avp>
+
+    		<avp name="RAT-Type" value="0"></avp>
+
+    		<avp name="RAI" value="check"></avp>
+
+    		<avp name="3GPP-User-Location-Info" value="check"></avp>
+
+    		<avp name="Trace-Data">
+        <!-- Add Trace-Data AVPs here -->
+        <avp name="Trace-Reference" value="trace-ref"></avp>
+
+    <avp name="Trace-Depth" value="1"></avp>
+
+    <avp name="Trace-NE-Type-List" value="check"></avp>
+
+    <avp name="Trace-Interface-List" value="check"></avp>
+
+    <avp name="Trace-Event-List" value="check"></avp>
+
+    <avp name="OMC-Id" value="check"></avp>
+
+    <avp name="Trace-Collection-Entity" value="check"></avp>
+
+    <avp name="MDT-Configuration">
+
+        <!-- Add MDT-Configuration AVPs here -->
+        <avp name="Job-Type" value="1"></avp>
+
+    <avp name="Area-Scope">
+        <avp name="Cell-Global-Identity" value="check"></avp>
+
+    <avp name="E-UTRAN-Cell-Global-Identity" value="check"></avp>
+
+    <avp name="Routing-Area-Identity" value="check"></avp>
+
+    <avp name="Location-Area-Identity" value="check"></avp>
+
+    <avp name="Tracking-Area-Identity" value="check"></avp>
+    </avp>
+
+    <avp name="List-Of-Measurements" value="1"></avp>
+
+    <avp name="Reporting-Trigger" value="1"></avp>
+
+    <avp name="Report-Interval" value="1"></avp>
+
+    <avp name="Report-Amount" value="1"></avp>
+
+    <avp name="Event-Threshold-RSRP" value="1"></avp>
+
+    <avp name="Event-Threshold-RSRQ" value="1"></avp>
+
+    <avp name="Logging-Interval" value="1"></avp>
+
+    <avp name="Logging-Duration" value="1"></avp>
+
+    <avp name="Measurement-Period-LTE" value="1"></avp>
+
+    <avp name="Measurement-Period-UMTS" value="1"></avp>
+
+    <avp name="Collection-Period-RRM-LTE" value="1"></avp>
+
+    <avp name="Collection-Period-RRM-UMTS" value="1"></avp>
+
+    <avp name="Positioning-Method" value="check"></avp>
+
+    <avp name="Measurement-Quantity" value="check"></avp>
+
+    <avp name="Event-Threshold-Event-1F" value="1"></avp>
+
+    <avp name="Event-Threshold-Event-1I" value="1"></avp>
+
+    </avp>
+    		</avp>
+
+    		<avp name="Trace-Reference" value="check"></avp>
+
+    		<avp name="3GPP2-BSID" value="check"></avp>
+
+    		<avp name="3GPP-MS-TimeZone" value="check"></avp>
+
+    		<avp name="Routing-Rule-Identifier" value="check"></avp>
+
+    		<avp name="UE-Local-IP-Address" value="check"></avp>
+
+    		<avp name="HeNB-Local-IP-Address" value="check"></avp>
+
+    		<avp name="UDP-Source-Port" value="5060"></avp>
+
+    		<avp name="Presence-Reporting-Area-Information">
+        <!-- Add Presence-Reporting-Area-Information AVPs here -->
+        <avp name="Presence-Reporting-Area-Identifier" value="check"> </avp>
+                        <avp name="Presence-Reporting-Area-Elements-List" value="check"> </avp>
+                        <avp name="Presence-Reporting-Area-Status" value="0"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="Presence-Reporting-Area-Node" value="0"> </avp>
+    		</avp>
+
+		</avp>
+                <avp name="Usage-Monitoring-Information">
+                    <avp name="Monitoring-Key" value="BROWSING_TURKSAT"> </avp>
+                    <avp name="Quota-Consumption-Time" value="1"></avp>
+                    <avp name="Usage-Monitoring-Level" value="1"> </avp>
+                    <avp name="Used-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="3600"></avp>
+                    </avp>
+                    <avp name="Granted-Service-Unit">
+                        <avp name="CC-Input-Octets" value="10485760"> </avp>
+                        <avp name="CC-Output-Octets" value="5242880"> </avp>
+                        <avp name="CC-Total-Octets" value="15728640"> </avp>
+                        <!-- Help from Internet -->
+                        <avp name="CC-Time" value="900"></avp>
+                    </avp>
+                    <!-- Help from Internet -->
+                    <avp name="Usage-Monitoring-Level" value="0"></avp>
+                    <avp name="Usage-Monitoring-Report" value="0"></avp>
+                    <avp name="Usage-Monitoring-Support" value="0"></avp>
+                </avp>
+                <avp name="Event-Trigger" value="1"></avp>
+                <avp name="Proxy-Info">
+                    <avp name="Proxy-Host" value="check"> </avp>
+                    <avp name="Proxy-State" value="check"> </avp>
+                </avp>
+                <avp name="Route-Record" value="check"> </avp>
+
+
+            </command>
+        </send>
+        <receive channel="channel-1">
+            <command name="CreditControlAnswer">
+                <avp name="Result-Code" value="2001"></avp>
+            </command>
+            <action>
+                <check-value name="Result-Code" behaviour="error"></check-value>
+            </action>
+     </receive>
+
+</traffic>
+
+
+
+
+    </scenario>

@@ -1,0 +1,2838 @@
+<message>
+<command = TDFSessionRequest>
+<command-flags = request proxyable null null >
+<cmd-code = 8388637 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<grouped = VendorSpecificApplicationId multiple = no >
+    <grouped-avp-code = 260 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationRealm type = OctetString >
+    <avp-code = 283 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationHost type = OctetString >
+    <avp-code = 293 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = SubscriptionId multiple = yes >
+    <grouped-avp-code = 443 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<grouped = SupportedFeatures multiple = yes >
+    <grouped-avp-code = 628 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = FramedIPAddress type = OctetString >
+    <avp-code = 8 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = FramedIPv6Prefix type = OctetString >
+    <avp-code = 97 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = IPCANType type = Enumerated >
+    <avp-code = 1027 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = 3GPP_GPRS code = 0 >
+        < name = DOCSIS code = 1 >
+        < name = xDSL code = 2 >
+        < name = WiMAX code = 3 >
+        < name = 3GPP2 code = 4 >
+        < name = 3GPP_EPS code = 5 >
+        < name = Non_3GPP_EPS code = 6 >
+        < name = FBA code = 7 >
+        < name = 3GPP_5GS code = 8 >
+        < name = Non_3GPP_5GS code = 9 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = RATType type = Enumerated >
+    <avp-code = 1032 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = WLAN code = 0 >
+        < name = VIRTUAL code = 1 >
+        < name = WIRELINE code = 3 >
+        < name = WIRELINE_CABLE code = 4 >
+        < name = WIRELINE_BBF code = 5 >
+        < name = UTRAN code = 1000 >
+        < name = GERAN code = 1001 >
+        < name = GAN code = 1002 >
+        < name = HSPA_EVOLUTION code = 1003 >
+        < name = EUTRAN code = 1004 >
+        < name = NR code = 1006 >
+        < name = LTE_M code = 1007 >
+        < name = NR_U code = 1008 >
+        < name = NR_REDCAP code = 1039 >
+        < name = NR_EREDCAP code = 1040 >
+        < name = CDMA2000_1X code = 2000 >
+        < name = HRPD code = 2001 >
+        < name = UMB code = 2002 >
+        < name = EHRPD code = 2003 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = ANTrusted type = Enumerated >
+    <avp-code = 1503 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = TRUSTED code = 0 >
+        < name = UNTRUSTED code = 1 >
+    </enum>
+</avp>
+<grouped = UserEquipmentInfo multiple = no >
+    <grouped-avp-code = 458 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = UserEquipmentInfoExtension multiple = no >
+    <grouped-avp-code = 653 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = QoSInformation multiple = no >
+    <grouped-avp-code = 1016 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = ANGWAddress type = Address >
+    <avp-code = 1050 encrypt = no multiple = yes  >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPSGSNAddress type = OctetString >
+    <avp-code = 6 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPSGSNIPv6Address type = OctetString >
+    <avp-code = 15 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPGGSNAddress type = OctetString >
+    <avp-code = 7 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPGGSNIPv6Address type = OctetString >
+    <avp-code = 16 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPSelectionMode type = OctetString >
+    <avp-code = 12 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = DynamicAddressFlag type = Enumerated >
+    <avp-code = 2051 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = STATIC code = 0 >
+        < name = DYNAMIC code = 1 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = DynamicAddressFlagExtension type = Enumerated >
+    <avp-code = 2068 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = NOT_APPLICABLE code = 0 >
+        < name = DYNAMIC code = 1 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = PDNConnectionChargingID type = Unsigned32 >
+    <avp-code = 2050 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPSGSNMCCMNC type = OctetString >
+    <avp-code = 18 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = RAI type = OctetString >
+    <avp-code = 909 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPUserLocationInfo type = OctetString >
+    <avp-code = 22 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<grouped = FixedUserLocationInfo multiple = no >
+    <grouped-avp-code = 2825 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = UserCSGInformation multiple = no >
+    <grouped-avp-code = 2319 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = TWANIdentifier type = OctetString >
+    <avp-code = 29 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPMSTimeZone type = OctetString >
+    <avp-code = 23 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = 3GPPChargingCharacteristics type = OctetString >
+    <avp-code = 13 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = CalledStationId type = OctetString >
+    <avp-code = 30 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ChargingInformation multiple = no >
+    <grouped-avp-code = 618 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = Online type = Enumerated >
+    <avp-code = 1009 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = DISABLE_ONLINE code = 0 >
+        < name = ENABLE_ONLINE code = 1 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = Offline type = Enumerated >
+    <avp-code = 1008 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = DISABLE_OFFLINE code = 0 >
+        < name = ENABLE_OFFLINE code = 1 >
+    </enum>
+</avp>
+<grouped = ADCRuleInstall multiple = yes >
+    <grouped-avp-code = 1092 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = RevalidationTime type = Time >
+    <avp-code = 1042 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+</avp>
+<grouped = UsageMonitoringInformation multiple = yes >
+    <grouped-avp-code = 1067 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = CSGInformationReporting type = Enumerated >
+    <avp-code = 1071 encrypt = no multiple = yes >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = CHANGE_CSG_CELL code = 0 >
+        < name = CHANGE_CSG_SUBSCRIBED_HYBRID_CELL code = 1 >
+        < name = CHANGE_CSG_UNSUBSCRIBED_HYBRID_CELL code = 2 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = EventTrigger type = Enumerated >
+    <avp-code = 1006 encrypt = no multiple = yes >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = SGSN_CHANGE code = 0 >
+        < name = QOS_CHANGE code = 1 >
+        < name = RAT_CHANGE code = 2 >
+        < name = TFT_CHANGE code = 3 >
+        < name = PLMN_CHANGE code = 4 >
+        < name = LOSS_OF_BEARER code = 5 >
+        < name = RECOVERY_OF_BEARER code = 6 >
+        < name = IP_CAN_CHANGE code = 7 >
+        < name = QOS_CHANGE_EXCEEDING_AUTHORIZATION code = 11 >
+        < name = RAI_CHANGE code = 12 >
+        < name = USER_LOCATION_CHANGE code = 13 >
+        < name = NO_EVENT_TRIGGERS code = 14 >
+        < name = OUT_OF_CREDIT code = 15 >
+        < name = REALLOCATION_OF_CREDIT code = 16 >
+        < name = REVALIDATION_TIMEOUT code = 17 >
+        < name = UE_IP_ADDRESS_ALLOCATE code = 18 >
+        < name = UE_IP_ADDRESS_RELEASE code = 19 >
+        < name = DEFAULT_EPS_BEARER_QOS_CHANGE code = 20 >
+        < name = AN_GW_CHANGE code = 21 >
+        < name = SUCCESSFUL_RESOURCE_ALLOCATION code = 22 >
+        < name = RESOURCE_MODIFICATION_REQUEST code = 23 >
+        < name = PGW_TRACE_CONTROL code = 24 >
+        < name = UE_TIME_ZONE_CHANGE code = 25 >
+        < name = TAI_CHANGE code = 26 >
+        < name = ECGI_CHANGE code = 27 >
+        < name = CHARGING_CORRELATION_EXCHANGE code = 28 >
+        < name = AMBR_MODIFICATION_FAILURE code = 29 >
+        < name = USER_CSG_INFORMATION_CHANGE code = 30 >
+        < name = USAGE_REPORT code = 33 >
+        < name = QOS_MODIFICATION_FAILURE code = 34 >
+        < name = USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE code = 35 >
+        < name = USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE code = 36 >
+        < name = ROUTING_RULE_CHANGE code = 37 >
+        < name = APPLICATION_START code = 39 >
+        < name = APPLICATION_STOP code = 40 >
+        < name = CS_TO_PS_HANDOVER code = 42 >
+        < name = UE_LOCAL_IP_ADDRESS_CHANGE code = 43 >
+        < name = HENB_LOCAL_IP_ADDRESS_CHANGE code = 44 >
+        < name = ACCESS_NETWORK_INFO_REPORT code = 45 >
+        < name = CREDIT_MANAGEMENT_SESSION_FAILURE code = 46 >
+        < name = DEFAULT_QOS_CHANGE code = 47 >
+        < name = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT code = 48 >
+        < name = ADDITION_OF_ACCESS code = 49 >
+        < name = REMOVAL_OF_ACCESS code = 50 >
+        < name = UNAVAILABLITY_OF_ACCESS code = 51 >
+        < name = AVAILABLITY_OF_ACCESS code = 52 >
+    </enum>
+</avp>
+<grouped = PresenceReportingAreaInformation multiple = no >
+    <grouped-avp-code = 2822 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = LogicalAccessID type = OctetString >
+    <avp-code = 302 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 13019 >
+</avp>
+<avp>
+    <avp-name = PhysicalAccessID type = OctetString >
+    <avp-code = 313 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 13019 >
+</avp>
+<avp>
+    <avp-name = 3GPP2BSID type = OctetString >
+    <avp-code = 9010 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 5535 >
+</avp>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord type = OctetString >
+    <avp-code = 282 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+</message>
+
+<message>
+<command = TDFSessionAnswer>
+<command-flags = null proxyable null null >
+<cmd-code = 8388637 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<grouped = VendorSpecificApplicationId multiple = no >
+    <grouped-avp-code = 260 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = ResultCode type = Unsigned32 >
+    <avp-code = 268 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ExperimentalResult multiple = no >
+    <grouped-avp-code = 297 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = OCOLR multiple = no >
+    <grouped-avp-code = 623 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = SupportedFeatures multiple = yes >
+    <grouped-avp-code = 628 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ADCRuleReport multiple = yes >
+    <grouped-avp-code = 1097 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = EventReportIndication multiple = no >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = ErrorMessage type = OctetString >
+    <avp-code = 281 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<avp>
+    <avp-name = ErrorReportingHost type = OctetString >
+    <avp-code = 294 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<grouped = FailedAVP multiple = no >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord type = OctetString >
+    <avp-code = 282 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = Load multiple = yes >
+    <grouped-avp-code = 650 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+</message>
+
+<message>
+<command = CreditControlRequest>
+<command-flags = request proxyable null null >
+<cmd-code = 272 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = AuthApplicationId type = Integer32 >
+    <avp-code = 258 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationRealm type = OctetString >
+    <avp-code = 283 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<avp>
+    <avp-name = CCRequestType type = Enumerated >
+    <avp-code = 416 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+    <enum>
+        < name = INITIAL_REQUEST code = 1 >
+        < name = UPDATE_REQUEST code = 2 >
+        < name = TERMINATION_REQUEST code = 3 >
+        < name = EVENT_REQUEST code = 4 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = CCRequestNumber type = Unsigned32 >
+    <avp-code = 415 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = CreditManagementStatus type = Unsigned32 >
+    <avp-code = 1082 encrypt = no multiple = no >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+</avp>
+<avp>
+    <avp-name = DestinationHost type = OctetString >
+    <avp-code = 293 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = FramedIPAddress type = OctetString >
+    <avp-code = 8 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = FramedIPv6Prefix type = OctetString >
+    <avp-code = 97 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ADCRuleReport multiple = yes >
+    <grouped-avp-code = 1097 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ApplicationDetectionInformation multiple = yes >
+    <grouped-avp-code = 1098 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = EventTrigger type = Enumerated >
+    <avp-code = 1006 encrypt = no multiple = yes >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = SGSN_CHANGE code = 0 >
+        < name = QOS_CHANGE code = 1 >
+        < name = RAT_CHANGE code = 2 >
+        < name = TFT_CHANGE code = 3 >
+        < name = PLMN_CHANGE code = 4 >
+        < name = LOSS_OF_BEARER code = 5 >
+        < name = RECOVERY_OF_BEARER code = 6 >
+        < name = IP_CAN_CHANGE code = 7 >
+        < name = QOS_CHANGE_EXCEEDING_AUTHORIZATION code = 11 >
+        < name = RAI_CHANGE code = 12 >
+        < name = USER_LOCATION_CHANGE code = 13 >
+        < name = NO_EVENT_TRIGGERS code = 14 >
+        < name = OUT_OF_CREDIT code = 15 >
+        < name = REALLOCATION_OF_CREDIT code = 16 >
+        < name = REVALIDATION_TIMEOUT code = 17 >
+        < name = UE_IP_ADDRESS_ALLOCATE code = 18 >
+        < name = UE_IP_ADDRESS_RELEASE code = 19 >
+        < name = DEFAULT_EPS_BEARER_QOS_CHANGE code = 20 >
+        < name = AN_GW_CHANGE code = 21 >
+        < name = SUCCESSFUL_RESOURCE_ALLOCATION code = 22 >
+        < name = RESOURCE_MODIFICATION_REQUEST code = 23 >
+        < name = PGW_TRACE_CONTROL code = 24 >
+        < name = UE_TIME_ZONE_CHANGE code = 25 >
+        < name = TAI_CHANGE code = 26 >
+        < name = ECGI_CHANGE code = 27 >
+        < name = CHARGING_CORRELATION_EXCHANGE code = 28 >
+        < name = AMBR_MODIFICATION_FAILURE code = 29 >
+        < name = USER_CSG_INFORMATION_CHANGE code = 30 >
+        < name = USAGE_REPORT code = 33 >
+        < name = QOS_MODIFICATION_FAILURE code = 34 >
+        < name = USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE code = 35 >
+        < name = USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE code = 36 >
+        < name = ROUTING_RULE_CHANGE code = 37 >
+        < name = APPLICATION_START code = 39 >
+        < name = APPLICATION_STOP code = 40 >
+        < name = CS_TO_PS_HANDOVER code = 42 >
+        < name = UE_LOCAL_IP_ADDRESS_CHANGE code = 43 >
+        < name = HENB_LOCAL_IP_ADDRESS_CHANGE code = 44 >
+        < name = ACCESS_NETWORK_INFO_REPORT code = 45 >
+        < name = CREDIT_MANAGEMENT_SESSION_FAILURE code = 46 >
+        < name = DEFAULT_QOS_CHANGE code = 47 >
+        < name = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT code = 48 >
+        < name = ADDITION_OF_ACCESS code = 49 >
+        < name = REMOVAL_OF_ACCESS code = 50 >
+        < name = UNAVAILABLITY_OF_ACCESS code = 51 >
+        < name = AVAILABLITY_OF_ACCESS code = 52 >
+    </enum>
+</avp>
+<grouped = EventReportIndication multiple = no >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = UsageMonitoringInformation multiple = yes >
+    <grouped-avp-code = 1067 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord type = OctetString >
+    <avp-code = 282 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = SupportedFeatures multiple = yes >
+    <grouped-avp-code = 628 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+</message>
+
+<message>
+<command = CreditControlAnswer>
+<command-flags = null proxyable null null >
+<cmd-code = 272 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = AuthApplicationId type = Integer32 >
+    <avp-code = 258 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = ResultCode type = Unsigned32 >
+    <avp-code = 268 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ExperimentalResult multiple = no >
+    <grouped-avp-code = 297 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = CCRequestType type = Enumerated >
+    <avp-code = 416 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+    <enum>
+        < name = INITIAL_REQUEST code = 1 >
+        < name = UPDATE_REQUEST code = 2 >
+        < name = TERMINATION_REQUEST code = 3 >
+        < name = EVENT_REQUEST code = 4 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = CCRequestNumber type = Unsigned32 >
+    <avp-code = 415 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = OCOLR multiple = no >
+    <grouped-avp-code = 623 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<avp>
+    <avp-name = FramedIPv6Prefix type = OctetString >
+    <avp-code = 97 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = QoSInformation multiple = no >
+    <grouped-avp-code = 1016 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = EventTrigger type = Enumerated >
+    <avp-code = 1006 encrypt = no multiple = yes >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = SGSN_CHANGE code = 0 >
+        < name = QOS_CHANGE code = 1 >
+        < name = RAT_CHANGE code = 2 >
+        < name = TFT_CHANGE code = 3 >
+        < name = PLMN_CHANGE code = 4 >
+        < name = LOSS_OF_BEARER code = 5 >
+        < name = RECOVERY_OF_BEARER code = 6 >
+        < name = IP_CAN_CHANGE code = 7 >
+        < name = QOS_CHANGE_EXCEEDING_AUTHORIZATION code = 11 >
+        < name = RAI_CHANGE code = 12 >
+        < name = USER_LOCATION_CHANGE code = 13 >
+        < name = NO_EVENT_TRIGGERS code = 14 >
+        < name = OUT_OF_CREDIT code = 15 >
+        < name = REALLOCATION_OF_CREDIT code = 16 >
+        < name = REVALIDATION_TIMEOUT code = 17 >
+        < name = UE_IP_ADDRESS_ALLOCATE code = 18 >
+        < name = UE_IP_ADDRESS_RELEASE code = 19 >
+        < name = DEFAULT_EPS_BEARER_QOS_CHANGE code = 20 >
+        < name = AN_GW_CHANGE code = 21 >
+        < name = SUCCESSFUL_RESOURCE_ALLOCATION code = 22 >
+        < name = RESOURCE_MODIFICATION_REQUEST code = 23 >
+        < name = PGW_TRACE_CONTROL code = 24 >
+        < name = UE_TIME_ZONE_CHANGE code = 25 >
+        < name = TAI_CHANGE code = 26 >
+        < name = ECGI_CHANGE code = 27 >
+        < name = CHARGING_CORRELATION_EXCHANGE code = 28 >
+        < name = AMBR_MODIFICATION_FAILURE code = 29 >
+        < name = USER_CSG_INFORMATION_CHANGE code = 30 >
+        < name = USAGE_REPORT code = 33 >
+        < name = QOS_MODIFICATION_FAILURE code = 34 >
+        < name = USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE code = 35 >
+        < name = USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE code = 36 >
+        < name = ROUTING_RULE_CHANGE code = 37 >
+        < name = APPLICATION_START code = 39 >
+        < name = APPLICATION_STOP code = 40 >
+        < name = CS_TO_PS_HANDOVER code = 42 >
+        < name = UE_LOCAL_IP_ADDRESS_CHANGE code = 43 >
+        < name = HENB_LOCAL_IP_ADDRESS_CHANGE code = 44 >
+        < name = ACCESS_NETWORK_INFO_REPORT code = 45 >
+        < name = CREDIT_MANAGEMENT_SESSION_FAILURE code = 46 >
+        < name = DEFAULT_QOS_CHANGE code = 47 >
+        < name = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT code = 48 >
+        < name = ADDITION_OF_ACCESS code = 49 >
+        < name = REMOVAL_OF_ACCESS code = 50 >
+        < name = UNAVAILABLITY_OF_ACCESS code = 51 >
+        < name = AVAILABLITY_OF_ACCESS code = 52 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = CSGInformationReporting type = Enumerated >
+    <avp-code = 1071 encrypt = no multiple = yes >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = CHANGE_CSG_CELL code = 0 >
+        < name = CHANGE_CSG_SUBSCRIBED_HYBRID_CELL code = 1 >
+        < name = CHANGE_CSG_UNSUBSCRIBED_HYBRID_CELL code = 2 >
+    </enum>
+</avp>
+<grouped = EventReportIndication multiple = no >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = RedirectHost type = OctetString >
+    <avp-code = 292 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = RedirectHostUsage type = Enumerated >
+    <avp-code = 261 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+    <enum>
+        < name = DONT_CACHE code = 0 >
+        < name = ALL_SESSION code = 1 >
+        < name = ALL_REALM code = 2 >
+        < name = REALM_AND_APPLICATION code = 3 >
+        < name = ALL_APPLICATION code = 4 >
+        < name = ALL_HOST code = 5 >
+        < name = ALL_USER code = 6 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = RedirectMaxCacheTime type = Unsigned32 >
+    <avp-code = 262 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ADCRuleRemove multiple = yes >
+    <grouped-avp-code = 1093 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ADCRuleInstall multiple = yes >
+    <grouped-avp-code = 1092 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = RevalidationTime type = Time >
+    <avp-code = 1042 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+</avp>
+<grouped = UsageMonitoringInformation multiple = yes >
+    <grouped-avp-code = 1067 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = ErrorMessage type = OctetString >
+    <avp-code = 281 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<avp>
+    <avp-name = ErrorReportingHost type = OctetString >
+    <avp-code = 294 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<grouped = FailedAVP multiple = no >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord type = OctetString >
+    <avp-code = 282 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = SupportedFeatures multiple = yes >
+    <grouped-avp-code = 628 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = Load multiple = yes >
+    <grouped-avp-code = 650 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+</message>
+
+<message>
+<command = ReAuthRequest>
+<command-flags = request proxyable null null >
+<cmd-code = 258 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = AuthApplicationId type = Integer32 >
+    <avp-code = 258 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationRealm type = OctetString >
+    <avp-code = 283 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DestinationHost type = OctetString >
+    <avp-code = 293 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = ReAuthRequestType type = Enumerated >
+    <avp-code = 285 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+    <enum>
+        < name = AUTHORIZE_ONLY code = 0 >
+        < name = AUTHORIZE_AUTHENTICATE code = 1 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = SessionReleaseCause type = Enumerated >
+    <avp-code = 1045 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = UNSPECIFIED_REASON code = 0 >
+        < name = UE_SUBSCRIPTION_REASON code = 1 >
+        < name = INSUFFICIENT_SERVER_RESOURCES code = 2 >
+        < name = IP_CAN_SESSION_TERMINATION code = 3 >
+        < name = UE_IP_ADDRESS_RELEASE code = 4 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = QoSInformation multiple = no >
+    <grouped-avp-code = 1016 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = EventTrigger type = Enumerated >
+    <avp-code = 1006 encrypt = no multiple = yes >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = SGSN_CHANGE code = 0 >
+        < name = QOS_CHANGE code = 1 >
+        < name = RAT_CHANGE code = 2 >
+        < name = TFT_CHANGE code = 3 >
+        < name = PLMN_CHANGE code = 4 >
+        < name = LOSS_OF_BEARER code = 5 >
+        < name = RECOVERY_OF_BEARER code = 6 >
+        < name = IP_CAN_CHANGE code = 7 >
+        < name = QOS_CHANGE_EXCEEDING_AUTHORIZATION code = 11 >
+        < name = RAI_CHANGE code = 12 >
+        < name = USER_LOCATION_CHANGE code = 13 >
+        < name = NO_EVENT_TRIGGERS code = 14 >
+        < name = OUT_OF_CREDIT code = 15 >
+        < name = REALLOCATION_OF_CREDIT code = 16 >
+        < name = REVALIDATION_TIMEOUT code = 17 >
+        < name = UE_IP_ADDRESS_ALLOCATE code = 18 >
+        < name = UE_IP_ADDRESS_RELEASE code = 19 >
+        < name = DEFAULT_EPS_BEARER_QOS_CHANGE code = 20 >
+        < name = AN_GW_CHANGE code = 21 >
+        < name = SUCCESSFUL_RESOURCE_ALLOCATION code = 22 >
+        < name = RESOURCE_MODIFICATION_REQUEST code = 23 >
+        < name = PGW_TRACE_CONTROL code = 24 >
+        < name = UE_TIME_ZONE_CHANGE code = 25 >
+        < name = TAI_CHANGE code = 26 >
+        < name = ECGI_CHANGE code = 27 >
+        < name = CHARGING_CORRELATION_EXCHANGE code = 28 >
+        < name = AMBR_MODIFICATION_FAILURE code = 29 >
+        < name = USER_CSG_INFORMATION_CHANGE code = 30 >
+        < name = USAGE_REPORT code = 33 >
+        < name = QOS_MODIFICATION_FAILURE code = 34 >
+        < name = USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE code = 35 >
+        < name = USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE code = 36 >
+        < name = ROUTING_RULE_CHANGE code = 37 >
+        < name = APPLICATION_START code = 39 >
+        < name = APPLICATION_STOP code = 40 >
+        < name = CS_TO_PS_HANDOVER code = 42 >
+        < name = UE_LOCAL_IP_ADDRESS_CHANGE code = 43 >
+        < name = HENB_LOCAL_IP_ADDRESS_CHANGE code = 44 >
+        < name = ACCESS_NETWORK_INFO_REPORT code = 45 >
+        < name = CREDIT_MANAGEMENT_SESSION_FAILURE code = 46 >
+        < name = DEFAULT_QOS_CHANGE code = 47 >
+        < name = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT code = 48 >
+        < name = ADDITION_OF_ACCESS code = 49 >
+        < name = REMOVAL_OF_ACCESS code = 50 >
+        < name = UNAVAILABLITY_OF_ACCESS code = 51 >
+        < name = AVAILABLITY_OF_ACCESS code = 52 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = CSGInformationReporting type = Enumerated >
+    <avp-code = 1071 encrypt = no multiple = yes >
+    <avp-flags = vendor null null >
+    <vendor-id = 10415 >
+    <enum>
+        < name = CHANGE_CSG_CELL code = 0 >
+        < name = CHANGE_CSG_SUBSCRIBED_HYBRID_CELL code = 1 >
+        < name = CHANGE_CSG_UNSUBSCRIBED_HYBRID_CELL code = 2 >
+    </enum>
+</avp>
+<grouped = EventReportIndication multiple = no >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ADCRuleRemove multiple = yes >
+    <grouped-avp-code = 1093 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ADCRuleInstall multiple = yes >
+    <grouped-avp-code = 1092 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = RevalidationTime type = Time >
+    <avp-code = 1042 encrypt = no multiple = no >
+    <avp-flags = vendor mandatory null >
+    <vendor-id = 10415 >
+</avp>
+<grouped = UsageMonitoringInformation multiple = yes >
+    <grouped-avp-code = 1067 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = RouteRecord type = OctetString >
+    <avp-code = 282 encrypt = no multiple = yes >
+    <avp-flags = null mandatory null >
+</avp>
+</message>
+
+<message>
+<command = ReAuthAnswer>
+<command-flags = null proxyable null null >
+<cmd-code = 258 >
+<protocol-version = 1 >
+</command>
+<avp>
+    <avp-name = SessionId type = OctetString >
+    <avp-code = 263 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = DRMP type = Enumerated >
+    <avp-code = 301 encrypt = no multiple = no >
+    <avp-flags = null null null >
+    <enum>
+        < name = PRIORITY_0 code = 0 >
+        < name = PRIORITY_1 code = 1 >
+        < name = PRIORITY_2 code = 2 >
+        < name = PRIORITY_3 code = 3 >
+        < name = PRIORITY_4 code = 4 >
+        < name = PRIORITY_5 code = 5 >
+        < name = PRIORITY_6 code = 6 >
+        < name = PRIORITY_7 code = 7 >
+        < name = PRIORITY_8 code = 8 >
+        < name = PRIORITY_9 code = 9 >
+        < name = PRIORITY_10 code = 10 >
+        < name = PRIORITY_11 code = 11 >
+        < name = PRIORITY_12 code = 12 >
+        < name = PRIORITY_13 code = 13 >
+        < name = PRIORITY_14 code = 14 >
+        < name = PRIORITY_15 code = 15 >
+    </enum>
+</avp>
+<avp>
+    <avp-name = OriginHost type = OctetString >
+    <avp-code = 264 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = OriginRealm type = OctetString >
+    <avp-code = 296 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<avp>
+    <avp-name = ResultCode type = Unsigned32 >
+    <avp-code = 268 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = ExperimentalResult multiple = no >
+    <grouped-avp-code = 297 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<avp>
+    <avp-name = OriginStateId type = Unsigned32 >
+    <avp-code = 278 encrypt = no multiple = no >
+    <avp-flags = null mandatory null >
+</avp>
+<grouped = OCSupportedFeatures multiple = no >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = OCOLR multiple = no >
+    <grouped-avp-code = 623 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+<grouped = ADCRuleReport multiple = yes >
+    <grouped-avp-code = 1097 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<grouped = EventReportIndication multiple = no >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+</grouped>
+<avp>
+    <avp-name = ErrorMessage type = OctetString >
+    <avp-code = 281 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<avp>
+    <avp-name = ErrorReportingHost type = OctetString >
+    <avp-code = 294 encrypt = no multiple = no >
+    <avp-flags = null null null >
+</avp>
+<grouped = FailedAVP multiple = no >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<grouped = ProxyInfo multiple = yes >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped>
+<grouped = Load multiple = yes >
+    <grouped-avp-code = 650 encrypt = no >
+    <grouped-avp-flags = null null null >
+</grouped>
+</message>
+
+<grouped-avp>
+    <grouped-avp-name = VendorSpecificApplicationId type = Grouped >
+    <grouped-avp-code = 260 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = VendorId type = Unsigned32 >
+        <avp-code = 266 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = AuthApplicationId type = Integer32 >
+        <avp-code = 258 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = AcctApplicationId type = Unsigned32 >
+        <avp-code = 259 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ExperimentalResult type = Grouped >
+    <grouped-avp-code = 297 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = VendorId type = Unsigned32 >
+        <avp-code = 266 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = ExperimentalResultCode type = Unsigned32 >
+        <avp-code = 298 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = FailedAVP type = Grouped >
+    <grouped-avp-code = 279 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ProxyInfo type = Grouped >
+    <grouped-avp-code = 284 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = ProxyHost type = OctetString >
+        <avp-code = 280 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = ProxyState type = OctetString >
+        <avp-code = 33 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = OCSupportedFeatures type = Grouped >
+    <grouped-avp-code = 621 encrypt = no >
+    <grouped-avp-flags = null null null >
+    <avp>
+        <avp-name = OCFeatureVector type = Unsigned64 >
+        <avp-code = 622 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = OCOLR type = Grouped >
+    <grouped-avp-code = 623 encrypt = no >
+    <grouped-avp-flags = null null null >
+    <avp>
+        <avp-name = OCSequenceNumber type = Unsigned64 >
+        <avp-code = 624 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = OCReportType type = Enumerated >
+        <avp-code = 626 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = OCReductionPercentage type = Unsigned32 >
+        <avp-code = 627 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = OCValidityDuration type = Unsigned32 >
+        <avp-code = 625 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = Load type = Grouped >
+    <grouped-avp-code = 650 encrypt = no >
+    <grouped-avp-flags = null null null >
+    <avp>
+        <avp-name = LoadType type = Enumerated >
+        <avp-code = 651 encrypt = no multiple = no >
+        <avp-flags = null null null >
+        <enum>
+            < name = HOST code = 0 >
+            < name = PEER code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = LoadValue type = Unsigned64 >
+        <avp-code = 652 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = SourceID type = OctetString >
+        <avp-code = 649 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = SupportedFeatures type = Grouped >
+    <grouped-avp-code = 628 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = VendorId type = Unsigned32 >
+        <avp-code = 266 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = FeatureListID type = Unsigned32 >
+        <avp-code = 629 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = FeatureList type = Unsigned32 >
+        <avp-code = 630 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = SubscriptionId type = Grouped >
+    <grouped-avp-code = 443 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = SubscriptionIdType type = Enumerated >
+        <avp-code = 450 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = END_USER_E164 code = 0 >
+            < name = END_USER_IMSI code = 1 >
+            < name = END_USER_SIP_URI code = 2 >
+            < name = END_USER_NAI code = 3 >
+            < name = END_USER_PRIVATE code = 4 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = SubscriptionIdData type = OctetString >
+        <avp-code = 444 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = UserEquipmentInfo type = Grouped >
+    <grouped-avp-code = 458 encrypt = no >
+    <grouped-avp-flags = null null null >
+    <avp>
+        <avp-name = UserEquipmentInfoType type = Enumerated >
+        <avp-code = 459 encrypt = no multiple = no >
+        <avp-flags = null null null >
+        <enum>
+            < name = IMEISV code = 0 >
+            < name = MAC code = 1 >
+            < name = EUI64 code = 2 >
+            < name = MODIFIED_EUI64 code = 3 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = UserEquipmentInfoValue type = OctetString >
+        <avp-code = 460 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = UserEquipmentInfoExtension type = Grouped >
+    <grouped-avp-code = 653 encrypt = no >
+    <grouped-avp-flags = null null null >
+    <avp>
+        <avp-name = UserEquipmentInfoIMEISV type = OctetString >
+        <avp-code = 654 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = UserEquipmentInfoMAC type = OctetString >
+        <avp-code = 655 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = UserEquipmentInfoEUI64 type = OctetString >
+        <avp-code = 656 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = UserEquipmentInfoModifiedEUI64 type = OctetString >
+        <avp-code = 657 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+    <avp>
+        <avp-name = UserEquipmentInfoIMEI type = OctetString >
+        <avp-code = 658 encrypt = no multiple = no >
+        <avp-flags = null null null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = QoSInformation type = Grouped >
+    <grouped-avp-code = 1016 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = QoSClassIdentifier type = Enumerated >
+        <avp-code = 1028 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = QCI_1 code = 1 >
+            < name = QCI_2 code = 2 >
+            < name = QCI_3 code = 3 >
+            < name = QCI_4 code = 4 >
+            < name = QCI_5 code = 5 >
+            < name = QCI_6 code = 6 >
+            < name = QCI_7 code = 7 >
+            < name = QCI_8 code = 8 >
+            < name = QCI_9 code = 9 >
+            < name = QCI_65 code = 65 >
+            < name = QCI_66 code = 66 >
+            < name = QCI_67 code = 67 >
+            < name = QCI_69 code = 69 >
+            < name = QCI_70 code = 70 >
+            < name = QCI_71 code = 71 >
+            < name = QCI_72 code = 72 >
+            < name = QCI_73 code = 73 >
+            < name = QCI_74 code = 74 >
+            < name = QCI_75 code = 75 >
+            < name = QCI_76 code = 76 >
+            < name = QCI_79 code = 79 >
+            < name = QCI_80 code = 80 >
+            < name = QCI_82 code = 82 >
+            < name = QCI_83 code = 83 >
+            < name = QCI_84 code = 84 >
+            < name = QCI_85 code = 85 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = MaxRequestedBandwidthUL type = Unsigned32 >
+        <avp-code = 516 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MaxRequestedBandwidthDL type = Unsigned32 >
+        <avp-code = 515 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedMaxRequestedBWUL type = Unsigned32 >
+        <avp-code = 554 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedMaxRequestedBWDL type = Unsigned32 >
+        <avp-code = 555 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = GuaranteedBitrateUL type = Unsigned32 >
+        <avp-code = 1026 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = GuaranteedBitrateDL type = Unsigned32 >
+        <avp-code = 1025 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedGBRUL type = Unsigned32 >
+        <avp-code = 2851 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedGBRDL type = Unsigned32 >
+        <avp-code = 2850 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = BearerIdentifier type = OctetString >
+        <avp-code = 1020 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = AllocationRetentionPriority multiple = no >
+        <grouped-avp-code = 1034 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = APNAggregateMaxBitrateUL type = Unsigned32 >
+        <avp-code = 1041 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = APNAggregateMaxBitrateDL type = Unsigned32 >
+        <avp-code = 1040 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedAPNAMBRUL type = Unsigned32 >
+        <avp-code = 2849 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedAPNAMBRDL type = Unsigned32 >
+        <avp-code = 2848 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = ConditionalAPNAggregateMaxBitrate multiple = yes >
+        <grouped-avp-code = 2818 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ConditionalAPNAggregateMaxBitrate type = Grouped >
+    <grouped-avp-code = 2818 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = APNAggregateMaxBitrateUL type = Unsigned32 >
+        <avp-code = 1041 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = APNAggregateMaxBitrateDL type = Unsigned32 >
+        <avp-code = 1040 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedAPNAMBRUL type = Unsigned32 >
+        <avp-code = 2849 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ExtendedAPNAMBRDL type = Unsigned32 >
+        <avp-code = 2848 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = IPCANType type = Enumerated >
+        <avp-code = 1027 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = 3GPP_GPRS code = 0 >
+            < name = DOCSIS code = 1 >
+            < name = xDSL code = 2 >
+            < name = WiMAX code = 3 >
+            < name = 3GPP2 code = 4 >
+            < name = 3GPP_EPS code = 5 >
+            < name = Non_3GPP_EPS code = 6 >
+            < name = FBA code = 7 >
+            < name = 3GPP_5GS code = 8 >
+            < name = Non_3GPP_5GS code = 9 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RATType type = Enumerated >
+        <avp-code = 1032 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = WLAN code = 0 >
+            < name = VIRTUAL code = 1 >
+            < name = WIRELINE code = 3 >
+            < name = WIRELINE_CABLE code = 4 >
+            < name = WIRELINE_BBF code = 5 >
+            < name = UTRAN code = 1000 >
+            < name = GERAN code = 1001 >
+            < name = GAN code = 1002 >
+            < name = HSPA_EVOLUTION code = 1003 >
+            < name = EUTRAN code = 1004 >
+            < name = NR code = 1006 >
+            < name = LTE_M code = 1007 >
+            < name = NR_U code = 1008 >
+            < name = NR_REDCAP code = 1039 >
+            < name = NR_EREDCAP code = 1040 >
+            < name = CDMA2000_1X code = 2000 >
+            < name = HRPD code = 2001 >
+            < name = UMB code = 2002 >
+            < name = EHRPD code = 2003 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = AllocationRetentionPriority type = Grouped >
+    <grouped-avp-code = 1034 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = PriorityLevel type = Unsigned32 >
+        <avp-code = 1046 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PreemptionCapability type = Enumerated >
+        <avp-code = 1047 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = PRE_EMPTION_CAPABILITY_ENABLED code = 0 >
+            < name = PRE_EMPTION_CAPABILITY_DISABLED code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = PreemptionVulnerability type = Enumerated >
+        <avp-code = 1048 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = PRE_EMPTION_VULNERABILITY_ENABLED code = 0 >
+            < name = PRE_EMPTION_VULNERABILITY_DISABLED code = 1 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ChargingInformation type = Grouped >
+    <grouped-avp-code = 618 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = PrimaryEventChargingFunctionName type = OctetString >
+        <avp-code = 619 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SecondaryEventChargingFunctionName type = OctetString >
+        <avp-code = 620 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PrimaryChargingCollectionFunctionName type = OctetString >
+        <avp-code = 621 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SecondaryChargingCollectionFunctionName type = OctetString >
+        <avp-code = 622 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ADCRuleInstall type = Grouped >
+    <grouped-avp-code = 1092 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <grouped = ADCRuleDefinition multiple = yes >
+        <grouped-avp-code = 1094 encrypt = no >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MonitoringFlags type = Unsigned32 >
+        <avp-code = 2828 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = RuleActivationTime type = Time >
+        <avp-code = 1043 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = RuleDeactivationTime type = Time >
+        <avp-code = 1044 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ADCRuleRemove type = Grouped >
+    <grouped-avp-code = 1093 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ADCRuleDefinition type = Grouped >
+    <grouped-avp-code = 1094 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TDFApplicationIdentifier type = OctetString >
+        <avp-code = 1088 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = FlowInformation multiple = yes >
+        <grouped-avp-code = 1058 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = ServiceIdentifier type = Unsigned32 >
+        <avp-code = 439 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = RatingGroup type = Unsigned32 >
+        <avp-code = 432 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = ReportingLevel type = Enumerated >
+        <avp-code = 1011 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = SERVICE_IDENTIFIER_LEVEL code = 0 >
+            < name = RATING_GROUP_LEVEL code = 1 >
+            < name = SPONSORED_CONNECTIVITY_LEVEL code = 2 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = Online type = Enumerated >
+        <avp-code = 1009 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = DISABLE_ONLINE code = 0 >
+            < name = ENABLE_ONLINE code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = Offline type = Enumerated >
+        <avp-code = 1008 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = DISABLE_OFFLINE code = 0 >
+            < name = ENABLE_OFFLINE code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = MeteringMethod type = Enumerated >
+        <avp-code = 1007 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = DURATION code = 0 >
+            < name = VOLUME code = 1 >
+            < name = DURATION_VOLUME code = 2 >
+            < name = EVENT code = 3 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = Precedence type = Unsigned32 >
+        <avp-code = 1010 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = FlowStatus type = Enumerated >
+        <avp-code = 511 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = ENABLED_UPLINK code = 0 >
+            < name = ENABLED_DOWNLINK code = 1 >
+            < name = ENABLED code = 2 >
+            < name = DISABLED code = 3 >
+            < name = REMOVED code = 4 >
+        </enum>
+    </avp>
+    <grouped = QoSInformation multiple = no >
+        <grouped-avp-code = 1016 encrypt = no >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = MonitoringKey type = OctetString >
+        <avp-code = 1066 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SponsorIdentity type = OctetString >
+        <avp-code = 531 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ApplicationServiceProviderIdentity type = OctetString >
+        <avp-code = 532 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = RedirectInformation multiple = yes  >
+        <grouped-avp-code = 1085 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = MuteNotification type = Enumerated >
+        <avp-code = 2809 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = MUTE_REQUIRED code = 0 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = TrafficSteeringPolicyIdentifierDL type = OctetString >
+        <avp-code = 2836 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TrafficSteeringPolicyIdentifierUL type = OctetString >
+        <avp-code = 2837 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ToSTrafficClass type = OctetString >
+        <avp-code = 1014 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ADCRuleReport type = Grouped >
+    <grouped-avp-code = 1097 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = ADCRuleName type = OctetString >
+        <avp-code = 1096 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ADCRuleBaseName type = OctetString >
+        <avp-code = 1095 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PCCRuleStatus type = Enumerated >
+        <avp-code = 1019 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = ACTIVE code = 0 >
+            < name = INACTIVE code = 1 >
+            < name = TEMPORARILY_INACTIVE code = 2 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RuleFailureCode type = Enumerated >
+        <avp-code = 1031 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = UNKNOWN_RULE_NAME code = 1 >
+            < name = RATING_GROUP_ERROR code = 2 >
+            < name = SERVICE_IDENTIFIER_ERROR code = 3 >
+            < name = GW_PCEF_MALFUNCTION code = 4 >
+            < name = RESOURCES_LIMITATION code = 5 >
+            < name = MAX_NR_BEARERS_REACHED code = 6 >
+            < name = UNKNOWN_BEARER_ID code = 7 >
+            < name = MISSING_BEARER_ID code = 8 >
+            < name = MISSING_FLOW_INFORMATION code = 9 >
+            < name = RESOURCE_ALLOCATION_FAILURE code = 10 >
+            < name = UNSUCCESSFUL_QOS_VALIDATION code = 11 >
+            < name = INCORRECT_FLOW_INFORMATION code = 12 >
+            < name = PS_TO_CS_HANDOVER code = 13 >
+            < name = TDF_APPLICATION_IDENTIFIER_ERROR code = 14 >
+            < name = NO_BEARER_BOUND code = 15 >
+            < name = FILTER_RESTRICTIONS code = 16 >
+            < name = AN_GW_FAILED code = 17 >
+            < name = MISSING_REDIRECT_SERVER_ADDRESS code = 18 >
+            < name = CM_END_USER_SERVICE_DENIED code = 19 >
+            < name = CM_CREDIT_CONTROL_NOT_APPLICABLE code = 20 >
+            < name = CM_AUTHORIZATION_REJECTED code = 21 >
+            < name = CM_USER_UNKNOWN code = 22 >
+            < name = CM_RATING_FAILED code = 23 >
+            < name = ROUTING_RULE_REJECTION code = 24 >
+            < name = UNKNOWN_ROUTING_ACCESS_INFORMATION code = 25 >
+            < name = NO_NBIFOM_SUPPORT code = 26 >
+            < name = UE_STATE_SUSPEND code = 27 >
+            < name = TRAFFIC_STEERING_ERROR code = 28 >
+            < name = DL_DATA_DELIVERY_SAME_TIME_ERROR code = 29 >
+        </enum>
+    </avp>
+    <grouped = FinalUnitIndication multiple = no >
+        <grouped-avp-code = 430 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = RedirectInformation type = Grouped >
+    <grouped-avp-code = 1085 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = RedirectSupport type = Enumerated >
+        <avp-code = 1086 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = REDIRECTION_DISABLED code = 0 >
+            < name = REDIRECTION_ENABLED code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RedirectAddressType type = Enumerated >
+        <avp-code = 433 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = IPV4_ADDRESS code = 0 >
+            < name = IPV6_ADDRESS code = 1 >
+            < name = URL code = 2 >
+            < name = SIP_URI code = 3 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RedirectServerAddress type = OctetString >
+        <avp-code = 435 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = FinalUnitIndication type = Grouped >
+    <grouped-avp-code = 430 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = FinalUnitAction type = Enumerated >
+        <avp-code = 449 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = TERMINATE code = 0 >
+            < name = REDIRECT code = 1 >
+            < name = RESTRICT_ACCESS code = 2 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RestrictionFilterRule type = OctetString >
+        <avp-code = 438 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = FilterId type = OctetString >
+        <avp-code = 11 encrypt = no multiple = yes >
+        <avp-flags = null mandatory null >
+    </avp>
+    <grouped = RedirectServer multiple = no >
+        <grouped-avp-code = 434 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = RedirectServer type = Grouped >
+    <grouped-avp-code = 434 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = RedirectAddressType type = Enumerated >
+        <avp-code = 433 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+        <enum>
+            < name = IPV4_ADDRESS code = 0 >
+            < name = IPV6_ADDRESS code = 1 >
+            < name = URL code = 2 >
+            < name = SIP_URI code = 3 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RedirectServerAddress type = OctetString >
+        <avp-code = 435 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = FlowInformation type = Grouped >
+    <grouped-avp-code = 1058 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = FlowDescription type = OctetString >
+        <avp-code = 507 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PacketFilterIdentifier type = OctetString >
+        <avp-code = 1060 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PacketFilterUsage type = Enumerated >
+        <avp-code = 1072 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = SEND_TO_UE code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = ToSTrafficClass type = OctetString >
+        <avp-code = 1014 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = SecurityParameterIndex type = OctetString >
+        <avp-code = 1056 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = FlowLabel type = OctetString >
+        <avp-code = 1057 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = FlowDirection type = Enumerated >
+        <avp-code = 1080 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = UNSPECIFIED code = 0 >
+            < name = DOWNLINK code = 1 >
+            < name = UPLINK code = 2 >
+            < name = BIDIRECTIONAL code = 3 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RoutingRuleIdentifier type = OctetString >
+        <avp-code = 1077 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = UsageMonitoringInformation type = Grouped >
+    <grouped-avp-code = 1067 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = MonitoringKey type = OctetString >
+        <avp-code = 1066 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = GrantedServiceUnit multiple = yes  >
+        <grouped-avp-code = 431 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <grouped = UsedServiceUnit multiple = yes  >
+        <grouped-avp-code = 446 encrypt = no >
+        <grouped-avp-flags = null mandatory null >
+    </grouped>
+    <avp>
+        <avp-name = QuotaConsumptionTime type = Unsigned32 >
+        <avp-code = 881 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = UsageMonitoringLevel type = Enumerated >
+        <avp-code = 1068 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = SESSION_LEVEL code = 0 >
+            < name = PCC_RULE_LEVEL code = 1 >
+            < name = ADC_RULE_LEVEL code = 2 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = UsageMonitoringReport type = Enumerated >
+        <avp-code = 1069 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = USAGE_MONITORING_REPORT_REQUIRED code = 0 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = UsageMonitoringSupport type = Enumerated >
+        <avp-code = 1070 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = USAGE_MONITORING_DISABLED code = 0 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = GrantedServiceUnit type = Grouped >
+    <grouped-avp-code = 431 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = CCTotalOctets type = Unsigned64 >
+        <avp-code = 421 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCInputOctets type = Unsigned64 >
+        <avp-code = 412 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCOutputOctets type = Unsigned64 >
+        <avp-code = 414 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCTime type = Unsigned32 >
+        <avp-code = 420 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = UsedServiceUnit type = Grouped >
+    <grouped-avp-code = 446 encrypt = no >
+    <grouped-avp-flags = null mandatory null >
+    <avp>
+        <avp-name = CCTotalOctets type = Unsigned64 >
+        <avp-code = 421 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCInputOctets type = Unsigned64 >
+        <avp-code = 412 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCOutputOctets type = Unsigned64 >
+        <avp-code = 414 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = CCTime type = Unsigned32 >
+        <avp-code = 420 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = ApplicationDetectionInformation type = Grouped >
+    <grouped-avp-code = 1098 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = TDFApplicationIdentifier type = OctetString >
+        <avp-code = 1088 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TDFApplicationInstanceIdentifier type = OctetString >
+        <avp-code = 2802 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = FlowInformation multiple = yes >
+        <grouped-avp-code = 1058 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = EventReportIndication type = Grouped >
+    <grouped-avp-code = 1033 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = ANTrusted type = Enumerated >
+        <avp-code = 1503 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = TRUSTED code = 0 >
+            < name = UNTRUSTED code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = EventTrigger type = Enumerated >
+        <avp-code = 1006 encrypt = no multiple = yes >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = SGSN_CHANGE code = 0 >
+            < name = QOS_CHANGE code = 1 >
+            < name = RAT_CHANGE code = 2 >
+            < name = TFT_CHANGE code = 3 >
+            < name = PLMN_CHANGE code = 4 >
+            < name = LOSS_OF_BEARER code = 5 >
+            < name = RECOVERY_OF_BEARER code = 6 >
+            < name = IP_CAN_CHANGE code = 7 >
+            < name = QOS_CHANGE_EXCEEDING_AUTHORIZATION code = 11 >
+            < name = RAI_CHANGE code = 12 >
+            < name = USER_LOCATION_CHANGE code = 13 >
+            < name = NO_EVENT_TRIGGERS code = 14 >
+            < name = OUT_OF_CREDIT code = 15 >
+            < name = REALLOCATION_OF_CREDIT code = 16 >
+            < name = REVALIDATION_TIMEOUT code = 17 >
+            < name = UE_IP_ADDRESS_ALLOCATE code = 18 >
+            < name = UE_IP_ADDRESS_RELEASE code = 19 >
+            < name = DEFAULT_EPS_BEARER_QOS_CHANGE code = 20 >
+            < name = AN_GW_CHANGE code = 21 >
+            < name = SUCCESSFUL_RESOURCE_ALLOCATION code = 22 >
+            < name = RESOURCE_MODIFICATION_REQUEST code = 23 >
+            < name = PGW_TRACE_CONTROL code = 24 >
+            < name = UE_TIME_ZONE_CHANGE code = 25 >
+            < name = TAI_CHANGE code = 26 >
+            < name = ECGI_CHANGE code = 27 >
+            < name = CHARGING_CORRELATION_EXCHANGE code = 28 >
+            < name = AMBR_MODIFICATION_FAILURE code = 29 >
+            < name = USER_CSG_INFORMATION_CHANGE code = 30 >
+            < name = USAGE_REPORT code = 33 >
+            < name = QOS_MODIFICATION_FAILURE code = 34 >
+            < name = USER_CSG_HYBRID_SUBSCRIBED_INFORMATION_CHANGE code = 35 >
+            < name = USER_CSG_HYBRID_UNSUBSCRIBED_INFORMATION_CHANGE code = 36 >
+            < name = ROUTING_RULE_CHANGE code = 37 >
+            < name = APPLICATION_START code = 39 >
+            < name = APPLICATION_STOP code = 40 >
+            < name = CS_TO_PS_HANDOVER code = 42 >
+            < name = UE_LOCAL_IP_ADDRESS_CHANGE code = 43 >
+            < name = HENB_LOCAL_IP_ADDRESS_CHANGE code = 44 >
+            < name = ACCESS_NETWORK_INFO_REPORT code = 45 >
+            < name = CREDIT_MANAGEMENT_SESSION_FAILURE code = 46 >
+            < name = DEFAULT_QOS_CHANGE code = 47 >
+            < name = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT code = 48 >
+            < name = ADDITION_OF_ACCESS code = 49 >
+            < name = REMOVAL_OF_ACCESS code = 50 >
+            < name = UNAVAILABLITY_OF_ACCESS code = 51 >
+            < name = AVAILABLITY_OF_ACCESS code = 52 >
+        </enum>
+    </avp>
+    <grouped = UserCSGInformation multiple = no >
+        <grouped-avp-code = 2319 encrypt = no >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = IPCANType type = Enumerated >
+        <avp-code = 1027 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = 3GPP_GPRS code = 0 >
+            < name = DOCSIS code = 1 >
+            < name = xDSL code = 2 >
+            < name = WiMAX code = 3 >
+            < name = 3GPP2 code = 4 >
+            < name = 3GPP_EPS code = 5 >
+            < name = Non_3GPP_EPS code = 6 >
+            < name = FBA code = 7 >
+            < name = 3GPP_5GS code = 8 >
+            < name = Non_3GPP_5GS code = 9 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = ANGWAddress type = Address >
+        <avp-code = 1050 encrypt = no multiple = yes  >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPSGSNAddress type = OctetString >
+        <avp-code = 6 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPSGSNIPv6Address type = OctetString >
+        <avp-code = 15 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPSGSNMCCMNC type = OctetString >
+        <avp-code = 18 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = FramedIPAddress type = OctetString >
+        <avp-code = 8 encrypt = no multiple = no >
+        <avp-flags = null mandatory null >
+    </avp>
+    <avp>
+        <avp-name = RATType type = Enumerated >
+        <avp-code = 1032 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = WLAN code = 0 >
+            < name = VIRTUAL code = 1 >
+            < name = WIRELINE code = 3 >
+            < name = WIRELINE_CABLE code = 4 >
+            < name = WIRELINE_BBF code = 5 >
+            < name = UTRAN code = 1000 >
+            < name = GERAN code = 1001 >
+            < name = GAN code = 1002 >
+            < name = HSPA_EVOLUTION code = 1003 >
+            < name = EUTRAN code = 1004 >
+            < name = NR code = 1006 >
+            < name = LTE_M code = 1007 >
+            < name = NR_U code = 1008 >
+            < name = NR_REDCAP code = 1039 >
+            < name = NR_EREDCAP code = 1040 >
+            < name = CDMA2000_1X code = 2000 >
+            < name = HRPD code = 2001 >
+            < name = UMB code = 2002 >
+            < name = EHRPD code = 2003 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = RAI type = OctetString >
+        <avp-code = 909 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPUserLocationInfo type = OctetString >
+        <avp-code = 22 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = TraceData multiple = no >
+        <grouped-avp-code = 1458 encrypt = no >
+        <grouped-avp-flags = vendor mandatory null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = TraceReference type = OctetString >
+        <avp-code = 1459 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = 3GPP2BSID type = OctetString >
+        <avp-code = 9010 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 5535 >
+    </avp>
+    <avp>
+        <avp-name = 3GPPMSTimeZone type = OctetString >
+        <avp-code = 23 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = RoutingRuleIdentifier type = OctetString >
+        <avp-code = 1077 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = UELocalIPAddress type = Address >
+        <avp-code = 2805 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = HeNBLocalIPAddress type = Address >
+        <avp-code = 2804 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = UDPSourcePort type = Unsigned32 >
+        <avp-code = 2806 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = PresenceReportingAreaInformation multiple = no >
+        <grouped-avp-code = 2822 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = UserCSGInformation type = Grouped >
+    <grouped-avp-code = 2319 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = CSGId type = Unsigned32 >
+        <avp-code = 1437 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = CSGAccessMode type = Enumerated >
+        <avp-code = 2317 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = CLOSED_MODE code = 0 >
+            < name = HYBRID_MODE code = 1 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = CSGMembershipIndication type = Enumerated >
+        <avp-code = 2318 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = NOT_CSG_MEMBER code = 0 >
+            < name = CSG_MEMBER code = 1 >
+        </enum>
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = PresenceReportingAreaInformation type = Grouped >
+    <grouped-avp-code = 2822 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = PresenceReportingAreaIdentifier type = OctetString >
+        <avp-code = 2821 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PresenceReportingAreaStatus type = Unsigned32 >
+        <avp-code = 2823 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PresenceReportingAreaElementsList type = OctetString >
+        <avp-code = 2820 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PresenceReportingAreaNode type = Unsigned32 >
+        <avp-code = 2855 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = FixedUserLocationInfo type = Grouped >
+    <grouped-avp-code = 2825 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = SSID type = OctetString >
+        <avp-code = 1524 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = BSSID type = OctetString >
+        <avp-code = 2716 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LogicalAccessID type = OctetString >
+        <avp-code = 302 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 13019 >
+    </avp>
+    <avp>
+        <avp-name = PhysicalAccessID type = OctetString >
+        <avp-code = 313 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 13019 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = AreaScope type = Grouped >
+    <grouped-avp-code = 1624 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = CellGlobalIdentity type = OctetString >
+        <avp-code = 1604 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ETUTRANCellGlobalIdentity type = OctetString >
+        <avp-code = 1605 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = RoutingAreaIdentity type = OctetString >
+        <avp-code = 1606 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LocationAreaIdentity type = OctetString >
+        <avp-code = 1607 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TrackingAreaIdentity type = OctetString >
+        <avp-code = 1603 encrypt = no multiple = yes >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = MDTConfiguration type = Grouped >
+    <grouped-avp-code = 1622 encrypt = no >
+    <grouped-avp-flags = vendor null null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = JobType type = Enumerated >
+        <avp-code = 1623 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = IMMEDIATE_MDT_ONLY code = 0 >
+            < name = LOGGED_MDT_ONLY code = 1 >
+            < name = TRACE_ONLY code = 2 >
+            < name = IMMEDIATE_MDT_AND_TRACE code = 3 >
+            < name = RLF_REPORTS_ONLY code = 4 >
+            < name = RCEF_REPORTS_ONLY code = 5 >
+            < name = LOGGED_MBSFN_MDT code = 6 >
+        </enum>
+    </avp>
+    <grouped = AreaScope multiple = no >
+        <grouped-avp-code = 1624 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+    <avp>
+        <avp-name = ListOfMeasurements type = Unsigned32 >
+        <avp-code = 1625 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ReportingTrigger type = Unsigned32 >
+        <avp-code = 1626 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ReportInterval type = Enumerated >
+        <avp-code = 1627 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = ReportAmount type = Enumerated >
+        <avp-code = 1628 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = EventThresholdRSRP type = Unsigned32 >
+        <avp-code = 1629 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = EventThresholdRSRQ type = Unsigned32 >
+        <avp-code = 1630 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LoggingInterval type = Enumerated >
+        <avp-code = 1631 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = LoggingDuration type = Enumerated >
+        <avp-code = 1632 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MeasurementPeriodLTE type = Enumerated >
+        <avp-code = 1655 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MeasurementPeriodUMTS type = Enumerated >
+        <avp-code = 1656 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = CollectionPeriodRRMLTE type = Enumerated >
+        <avp-code = 1657 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = CollectionPeriodRRMUMTS type = Enumerated >
+        <avp-code = 1658 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = PositioningMethod type = OctetString >
+        <avp-code = 1659 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = MeasurementQuantity type = OctetString >
+        <avp-code = 1660 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = EventThresholdEvent1F type = Integer32 >
+        <avp-code = 1661 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = EventThresholdEvent1I type = Integer32 >
+        <avp-code = 1662 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+</grouped-avp>
+
+<grouped-avp>
+    <grouped-avp-name = TraceData type = Grouped >
+    <grouped-avp-code = 1458 encrypt = no >
+    <grouped-avp-flags = vendor mandatory null >
+    <grouped-vendor-id = 10415 >
+    <avp>
+        <avp-name = TraceReference type = OctetString >
+        <avp-code = 1459 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TraceDepth type = Enumerated >
+        <avp-code = 1462 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+        <enum>
+            < name = MINIMUM code = 0 >
+            < name = MEDIUM code = 1 >
+            < name = MAXIMUM code = 2 >
+            < name = MINIMUM_WO_VENDOR_EXTENSION code = 3 >
+            < name = MEDIUM_WO_VENDOR_EXTENSION code = 4 >
+            < name = MAXIMUM_WO_VENDOR_EXTENSION code = 5 >
+        </enum>
+    </avp>
+    <avp>
+        <avp-name = TraceNETypeList type = OctetString >
+        <avp-code = 1463 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TraceInterfaceList type = OctetString >
+        <avp-code = 1464 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TraceEventList type = OctetString >
+        <avp-code = 1465 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = OMCId type = OctetString >
+        <avp-code = 1466 encrypt = no multiple = no >
+        <avp-flags = vendor null null >
+        <vendor-id = 10415 >
+    </avp>
+    <avp>
+        <avp-name = TraceCollectionEntity type = Address >
+        <avp-code = 1452 encrypt = no multiple = no >
+        <avp-flags = vendor mandatory null >
+        <vendor-id = 10415 >
+    </avp>
+    <grouped = MDTConfiguration multiple = no >
+        <grouped-avp-code = 1622 encrypt = no >
+        <grouped-avp-flags = vendor null null >
+        <grouped-vendor-id = 10415 >
+    </grouped>
+</grouped-avp>

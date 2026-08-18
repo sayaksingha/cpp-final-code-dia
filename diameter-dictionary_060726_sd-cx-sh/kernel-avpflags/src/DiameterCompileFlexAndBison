@@ -1,0 +1,3 @@
+flex diameter.l
+bison -d diameter.y
+

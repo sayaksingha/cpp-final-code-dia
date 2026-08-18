@@ -1,0 +1,38 @@
+#ifndef INCL_DIAMETER_STRUCTS_DEF_H
+#define INCL_DIAMETER_STRUCTS_DEF_H
+#include "DiameterConstDef.h"
+
+enum DiameterMsgErr
+{
+	DIAMETER_NO_ERR,
+	DIAMETER_ERR_ENCODE,
+	DIAMETER_VERSION_ERR,
+	DIAMETER_ERR_DECODE,
+	DIAMETER_NULL_HEADER_ERR,
+	DIAMETER_OBJ_NULL,
+	DIAMETER_BASE_FUNC_CALLED_ERR,
+	DIAMETER_MANDATORY_PARAM_ERR
+};
+
+enum DiameterDataType
+{
+   INVALID_TYPE      =  0,
+   INTEGER32_TYPE    =  1,
+   INTEGER64_TYPE    =  2,
+   UNSIGNED32_TYPE   =  3,
+   UNSIGNED64_TYPE   =  4,
+   OCTETSTRING_TYPE  =  5,
+	GROUPED_TYPE		=  6,
+	ENUMERATED_TYPE   =  7,
+   ADDRESS_TYPE      =  8,
+   TIME_TYPE         =  9
+};
+
+typedef struct byteArray
+{
+   UINT8    byte[MAX_DIAMETER_PACKET_SIZE];
+   UINT16   offset;
+   UINT16   size;
+}array;
+
+#endif

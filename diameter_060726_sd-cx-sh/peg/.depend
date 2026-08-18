@@ -1,0 +1,2 @@
+obj/DiameterPeg.o : src/DiameterPeg.cc \
+ /home/mram/cvs/signalling/src//protocol/diameter/tayanaBase/src/peg/include/DiameterPeg.h
